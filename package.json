@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@kikiutils/prettierrc": "^1.3.2"
+  },
+  "prettier": "@kikiutils/prettierrc"
+}
