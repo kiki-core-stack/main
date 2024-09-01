@@ -1,4 +1,4 @@
-name: el-plus-admin
+name: kiki-core-stack
 
 x-common-build-args: &common-build-args
   NPMRC_REGISTRY: ${NPMRC_REGISTRY:-https://registry.npmjs.org}
@@ -17,45 +17,45 @@ x-common-environments: &common-environments
   REDIS_URI: ${REDIS_URI}
 
 services:
-  # Backend
-  backend:
+  # Admin backend
+  admin-backend:
     build:
       args:
         <<: *common-build-args
-        SESSION_SECRET_KEY: ${BACKEND_SESSION_SECRET_KEY}
-        SESSION_SECRET_KEY_ENCODING: ${BACKEND_SESSION_SECRET_KEY_ENCODING}
-      context: ./backend
-    container_name: el-plus-admin-backend
+        SESSION_SECRET_KEY: ${ADMIN_BACKEND_SESSION_SECRET_KEY}
+        SESSION_SECRET_KEY_ENCODING: ${ADMIN_BACKEND_SESSION_SECRET_KEY_ENCODING}
+      context: ./admin-backend
+    container_name: kiki-core-stack-admin-backend
     environment:
       <<: *common-environments
-      NITRO_CLUSTER_WORKERS: ${BACKEND_WORKERS}
-      SEND_MAIL_FROM: ${BACKEND_SEND_MAIL_FROM}
-      SEND_MAIL_TO: ${BACKEND_SEND_MAIL_TO}
+      NITRO_CLUSTER_WORKERS: ${ADMIN_BACKEND_WORKERS}
+      SEND_MAIL_FROM: ${ADMIN_BACKEND_SEND_MAIL_FROM}
+      SEND_MAIL_TO: ${ADMIN_BACKEND_SEND_MAIL_TO}
     restart: always
     volumes:
       - ${FILES_DIR_PATH}:/files
 
-  # Frontend
-  frontend:
+  # Admin frontend
+  admin-frontend:
     build:
       <<: *common-build-options
-      context: ./frontend
-    container_name: el-plus-admin-frontend
+      context: ./admin-frontend
+    container_name: kiki-core-stack-admin-frontend
     environment:
       <<: *common-environments
     volumes:
-      - frontend-dist:/frontend-dist
+      - admin-frontend-dist:/admin-frontend-dist
 
   # Nginx
   nginx:
     build:
       context: ./nginx
-    container_name: el-plus-admin-nginx
+    container_name: kiki-core-stack-nginx
     depends_on:
-      - backend
-      - frontend
+      - admin-backend
+      - admin-frontend
     ports:
-      - 127.0.0.1:${NGINX_EXPOSE_PORT}:80
+      - 127.0.0.1:${ADMIN_WEB_NGINX_EXPOSE_PORT}:80
     restart: always
     volumes:
       - read_only: true
@@ -63,9 +63,9 @@ services:
         target: /files
         type: bind
       - read_only: true
-        source: frontend-dist
-        target: /frontend-dist
+        source: admin-frontend-dist
+        target: /admin-frontend-dist
         type: volume
 
 volumes:
-  frontend-dist:
+  admin-frontend-dist:
