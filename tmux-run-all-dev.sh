@@ -1,15 +1,15 @@
 #!/bin/bash
 
-cd $(dirname "$(readlink -f "$0")")
-SCRIPT_NAME="tmux-run-dev.sh"
+cd "$(dirname "$(readlink -f "$0")")"
+SCRIPT_NAME='tmux-run-dev.sh'
 
 execute_script() {
 	local dir=$1
 	(
 		cd "$dir"
 		echo "Executing $SCRIPT_NAME in $dir ..."
-		chmod 700 $SCRIPT_NAME
-		./$SCRIPT_NAME
+		chmod 700 "$SCRIPT_NAME"
+		./"$SCRIPT_NAME"
 	)
 }
 

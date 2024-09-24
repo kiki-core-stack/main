@@ -1,7 +1,7 @@
 name: kiki-core-stack
 
 x-common-build-args: &common-build-args
-  NPMRC_REGISTRY: ${NPMRC_REGISTRY:-https://registry.npmjs.org}
+  NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
 
 x-common-build-options: &common-build-options
   args:
