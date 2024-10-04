@@ -20,10 +20,7 @@ services:
   # Admin backend
   admin-backend:
     build:
-      args:
-        <<: *common-build-args
-        SESSION_SECRET_KEY: ${ADMIN_BACKEND_SESSION_SECRET_KEY}
-        SESSION_SECRET_KEY_ENCODING: ${ADMIN_BACKEND_SESSION_SECRET_KEY_ENCODING}
+      <<: *common-build-options
       context: ./admin-backend
     container_name: kiki-core-stack-admin-backend
     environment:
@@ -31,6 +28,8 @@ services:
       NITRO_CLUSTER_WORKERS: ${ADMIN_BACKEND_WORKERS}
       SEND_MAIL_FROM: ${ADMIN_BACKEND_SEND_MAIL_FROM}
       SEND_MAIL_TO: ${ADMIN_BACKEND_SEND_MAIL_TO}
+    ports:
+      - 127.0.0.1:${ADMIN_BACKEND_EXPOSE_PORT}:8000
     restart: always
     volumes:
       - ${FILES_DIR_PATH}:/files
@@ -44,28 +43,4 @@ services:
     environment:
       <<: *common-environments
     volumes:
-      - admin-frontend-dist:/admin-frontend-dist
-
-  # Nginx
-  nginx:
-    build:
-      context: ./nginx
-    container_name: kiki-core-stack-nginx
-    depends_on:
-      - admin-backend
-      - admin-frontend
-    ports:
-      - 127.0.0.1:${ADMIN_WEB_NGINX_EXPOSE_PORT}:80
-    restart: always
-    volumes:
-      - read_only: true
-        source: ${FILES_DIR_PATH}
-        target: /files
-        type: bind
-      - read_only: true
-        source: admin-frontend-dist
-        target: /admin-frontend-dist
-        type: volume
-
-volumes:
-  admin-frontend-dist:
+      - ${ADMIN_FRONTEND_DIST_DIR_PATH}:/admin-frontend-dist
