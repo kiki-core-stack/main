@@ -8,7 +8,6 @@ x-common-build-options: &common-build-options
     <<: *common-build-args
 
 x-common-environments: &common-environments
-  FILES_DIR_PATH: /files
   MAIL_SERVER_HOST: ${MAIL_SERVER_HOST}
   MAIL_SERVER_PORT: ${MAIL_SERVER_PORT}
   MONGODB_URI: ${MONGODB_URI}
@@ -31,8 +30,6 @@ services:
     ports:
       - 127.0.0.1:${ADMIN_BACKEND_EXPOSE_PORT}:8000
     restart: always
-    volumes:
-      - ${FILES_DIR_PATH}:/files
 
   # Admin frontend
   admin-frontend:
