@@ -24,7 +24,7 @@ services:
     container_name: kiki-core-stack-admin-backend
     environment:
       <<: *common-environments
-      NITRO_CLUSTER_WORKERS: ${ADMIN_BACKEND_WORKERS}
+      CLUSTER_WORKERS: ${ADMIN_BACKEND_CLUSTER_WORKERS}
       SEND_MAIL_FROM: ${ADMIN_BACKEND_SEND_MAIL_FROM}
       SEND_MAIL_TO: ${ADMIN_BACKEND_SEND_MAIL_TO}
     ports:
