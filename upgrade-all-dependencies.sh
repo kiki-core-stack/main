@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 cd "$(dirname "$(readlink -f "$0")")"
 SCRIPT_NAME='upgrade-dependencies.sh'
 
