@@ -24,8 +24,10 @@ services:
     container_name: kiki-core-stack-admin-backend
     environment:
       <<: *common-environments
+    image: kiki-core-stack/admin-backend
     ports:
       - '127.0.0.1:${ADMIN_BACKEND_EXPOSE_PORT}:8000'
+    pull_policy: never
     restart: always
 
   # Admin frontend
@@ -36,5 +38,7 @@ services:
     container_name: kiki-core-stack-admin-frontend
     environment:
       <<: *common-environments
+    image: kiki-core-stack/admin-frontend
+    pull_policy: never
     volumes:
-      - ${ADMIN_FRONTEND_DIST_DIR_PATH}:/admin-frontend-dist
+      - '${ADMIN_FRONTEND_DIST_DIR_PATH}:/admin-frontend-dist'
