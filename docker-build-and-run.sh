@@ -5,6 +5,7 @@ set -e
 if [[ "$*" == *'-p'* ]]; then
     docker compose pull &
     docker pull busybox:latest &
+    docker pull docker/dockerfile:labs &
     docker pull kikikanri/node22:base-alpine &
     docker pull oven/bun:slim &
     wait
