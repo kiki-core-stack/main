@@ -8,10 +8,10 @@ x-common-build-options: &common-build-options
     <<: *common-build-args
 
 x-common-environments: &common-environments
-  MAIL_SERVER_HOST: ${MAIL_SERVER_HOST}
-  MAIL_SERVER_PORT: ${MAIL_SERVER_PORT}
+  MAIL_SERVER_HOST: $MAIL_SERVER_HOST
+  MAIL_SERVER_PORT: $MAIL_SERVER_PORT
   NODE_ENV: production
-  NODEMAILER_USE_SECURE: ${NODEMAILER_USE_SECURE}
+  NODEMAILER_USE_SECURE: $NODEMAILER_USE_SECURE
 
 services:
   # Admin backend
