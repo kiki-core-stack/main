@@ -48,4 +48,4 @@ services:
     image: kiki-core-stack/admin-frontend
     pull_policy: never
     volumes:
-      - '${ADMIN_FRONTEND_DIST_DIR_PATH}:/admin-frontend-dist'
+      - '${ADMIN_FRONTEND_STATIC_DIR_PATH}:/static'
