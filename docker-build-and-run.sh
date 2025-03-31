@@ -11,5 +11,5 @@ if [[ "$*" == *'-p'* ]]; then
     wait
 fi
 
-docker compose build
+COMPOSE_BAKE=true docker compose build
 docker compose up -d --remove-orphans
