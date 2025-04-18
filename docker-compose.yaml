@@ -16,8 +16,8 @@ x-common-environments: &common-environments
 secrets:
   MONGODB_URI:
     environment: MONGODB_URI
-  REDIS_URI:
-    environment: REDIS_URI
+  REDIS_URL:
+    environment: REDIS_URL
 
 services:
   # Admin backend
@@ -35,7 +35,7 @@ services:
     restart: always
     secrets:
       - MONGODB_URI
-      - REDIS_URI
+      - REDIS_URL
 
   # Admin frontend
   admin-frontend:
