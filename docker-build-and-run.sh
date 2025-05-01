@@ -2,7 +2,9 @@
 
 set -e
 
-if [[ "$*" == *'-p'* ]]; then
+cd "$(realpath "$(dirname "$(readlink -f "$0")")")"
+
+if [[ " $@ " =~ ' -p ' ]]; then
     docker compose pull &
     docker pull busybox:latest &
     docker pull docker/dockerfile:labs &

@@ -1,6 +1,9 @@
 #!/bin/bash
 
-cd "$(dirname "$(readlink -f "$0")")"
+set -e
+
+cd "$(realpath "$(dirname "$(readlink -f "$0")")")"
+
 find . \
     \( -name '.cache' \
     -o -name '.nitro' \

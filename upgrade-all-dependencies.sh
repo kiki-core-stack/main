@@ -1,20 +1,20 @@
 #!/bin/bash
 
-set -e
-cd "$(dirname "$(readlink -f "$0")")"
+cd "$(realpath "$(dirname "$(readlink -f "$0")")")" || exit 1
+
 SCRIPT_NAME='upgrade-dependencies.sh'
 
-execute_script() {
-    local dir=$1
-    (
-        cd "$dir"
-        echo "Executing $SCRIPT_NAME in $dir ..."
-        chmod 700 "$SCRIPT_NAME"
-        ./"$SCRIPT_NAME"
-    )
-}
-
 find . -type f -name "$SCRIPT_NAME" | while read -r file; do
-    dir=$(dirname "$file")
-    execute_script "$dir"
+    dir="$(dirname "$file")"
+    echo "Executing $SCRIPT_NAME in $dir ..."
+
+    (
+        cd "$dir" || continue
+
+        if [[ -x "$SCRIPT_NAME" ]]; then
+            ./"$SCRIPT_NAME"
+        elif [[ -f "$SCRIPT_NAME" ]]; then
+            bash "$SCRIPT_NAME"
+        fi
+    )
 done
