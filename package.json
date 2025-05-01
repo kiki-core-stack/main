@@ -1,6 +1,0 @@
-{
-  "private": true,
-  "devDependencies": {
-    "@kikiutils/eslint-config": "^0.6.1"
-  }
-}
