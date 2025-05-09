@@ -2,7 +2,8 @@
 
 set -e
 
-cd "$(realpath "$(dirname "$(readlink -f "$0")")")"
+SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+cd "$SCRIPT_DIR"
 
 find . \
     \( -name '.cache' \

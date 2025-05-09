@@ -1,11 +1,16 @@
 #!/bin/bash
 
-cd "$(realpath "$(dirname "$(readlink -f "$0")")")" || exit 1
+set -e
+
+SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+cd "$SCRIPT_DIR"
+
+set +e
 
 SCRIPT_NAME='tmux-run-dev.sh'
 
 find . -type f -name "$SCRIPT_NAME" | while read -r file; do
-    dir="$(dirname "$file")"
+    dir="$(dirname "$(realpath "$file")")"
     echo "Executing $SCRIPT_NAME in $dir ..."
 
     (
