@@ -1,4 +1,4 @@
-name: kiki-core-stack
+name: $PROJECT_NAME
 
 x-common-build-args: &common-build-args
   NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org}
@@ -25,12 +25,12 @@ services:
     build:
       <<: *common-build-options
       context: ./admin-backend
-    container_name: kiki-core-stack-admin-backend
+    container_name: ${PROJECT_NAME}-admin-backend
     environment:
       <<: *common-environments
-    image: kiki-core-stack/admin-backend
+    image: ${PROJECT_NAME}/admin-backend
     ports:
-      - '127.0.0.1:${ADMIN_BACKEND_EXPOSE_PORT}:8000'
+      - 127.0.0.1:${ADMIN_BACKEND_EXPOSE_PORT}:8000
     pull_policy: never
     restart: always
     secrets:
@@ -42,10 +42,10 @@ services:
     build:
       <<: *common-build-options
       context: ./admin-frontend
-    container_name: kiki-core-stack-admin-frontend
+    container_name: ${PROJECT_NAME}-admin-frontend
     environment:
       <<: *common-environments
-    image: kiki-core-stack/admin-frontend
+    image: ${PROJECT_NAME}/admin-frontend
     pull_policy: never
     volumes:
-      - '${ADMIN_FRONTEND_STATIC_DIR_PATH}:/static'
+      - ${ADMIN_FRONTEND_STATIC_DIR_PATH}:/static
