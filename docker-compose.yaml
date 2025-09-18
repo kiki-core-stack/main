@@ -20,32 +20,32 @@ secrets:
     environment: REDIS_URL
 
 services:
-  # Admin backend
-  admin-backend:
+  # Management system backend
+  management-system-backend:
     build:
       <<: *common-build-options
-      context: ./admin-backend
-    container_name: '${PROJECT_NAME}-admin-backend'
+      context: ./management-system-backend
+    container_name: '${PROJECT_NAME}-management-system-backend'
     environment:
       <<: *common-environments
-    image: '${PROJECT_NAME}/admin-backend'
+    image: '${PROJECT_NAME}/management-system-backend'
     ports:
-      - '127.0.0.1:${ADMIN_BACKEND_EXPOSE_PORT}:8000'
+      - '127.0.0.1:${MANAGEMENT_SYSTEM_BACKEND_EXPOSE_PORT}:8000'
     pull_policy: never
     restart: always
     secrets:
       - MONGODB_URI
       - REDIS_URL
 
-  # Admin frontend
-  admin-frontend:
+  # Management system frontend
+  management-system-frontend:
     build:
       <<: *common-build-options
-      context: ./admin-frontend
-    container_name: '${PROJECT_NAME}-admin-frontend'
+      context: ./management-system-frontend
+    container_name: '${PROJECT_NAME}-management-system-frontend'
     environment:
       <<: *common-environments
-    image: '${PROJECT_NAME}/admin-frontend'
+    image: '${PROJECT_NAME}/management-system-frontend'
     pull_policy: never
     volumes:
-      - '${ADMIN_FRONTEND_STATIC_DIR_PATH}:/static'
+      - '${MANAGEMENT_SYSTEM_FRONTEND_STATIC_DIR_PATH}:/static'
