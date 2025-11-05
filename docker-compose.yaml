@@ -8,10 +8,7 @@ x-common-build-options: &common-build-options
     <<: *common-build-args
 
 x-common-environments: &common-environments
-  MAIL_SERVER_HOST: '${MAIL_SERVER_HOST}'
-  MAIL_SERVER_PORT: '${MAIL_SERVER_PORT}'
   NODE_ENV: production
-  NODEMAILER_USE_SECURE: '${NODEMAILER_USE_SECURE}'
 
 secrets:
   MONGODB_URI:
@@ -20,32 +17,32 @@ secrets:
     environment: REDIS_URL
 
 services:
-  # Management system backend
-  management-system-backend:
+  # Admin frontend
+  admin-frontend:
     build:
       <<: *common-build-options
-      context: ./management-system-backend
-    container_name: '${PROJECT_NAME}-management-system-backend'
+      context: ./admin-frontend
+    container_name: '${PROJECT_NAME}-admin-frontend'
     environment:
       <<: *common-environments
-    image: '${PROJECT_NAME}/management-system-backend'
+    image: '${PROJECT_NAME}/admin-frontend'
+    pull_policy: never
+    volumes:
+      - '${ADMIN_FRONTEND_STATIC_DIR_PATH}:/static'
+
+  # Management backend
+  management-backend:
+    build:
+      <<: *common-build-options
+      context: ./management-backend
+    container_name: '${PROJECT_NAME}-management-backend'
+    environment:
+      <<: *common-environments
+    image: '${PROJECT_NAME}/management-backend'
     ports:
-      - '127.0.0.1:${MANAGEMENT_SYSTEM_BACKEND_EXPOSE_PORT}:8000'
+      - '127.0.0.1:${MANAGEMENT_BACKEND_EXPOSE_PORT}:8000'
     pull_policy: never
     restart: always
     secrets:
       - MONGODB_URI
       - REDIS_URL
-
-  # Management system frontend
-  management-system-frontend:
-    build:
-      <<: *common-build-options
-      context: ./management-system-frontend
-    container_name: '${PROJECT_NAME}-management-system-frontend'
-    environment:
-      <<: *common-environments
-    image: '${PROJECT_NAME}/management-system-frontend'
-    pull_policy: never
-    volumes:
-      - '${MANAGEMENT_SYSTEM_FRONTEND_STATIC_DIR_PATH}:/static'
