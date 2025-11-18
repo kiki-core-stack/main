@@ -46,3 +46,18 @@ services:
     secrets:
       - MONGODB_URI
       - REDIS_URL
+
+  # Ops workers ts
+  ops-workers-ts:
+    build:
+      <<: *common-build-options
+      context: ./ops-workers-ts
+    container_name: '${PROJECT_NAME}-ops-workers-ts'
+    environment:
+      <<: *common-environments
+    image: '${PROJECT_NAME}/ops-workers-tss'
+    pull_policy: never
+    restart: always
+    secrets:
+      - MONGODB_URI
+      - REDIS_URL
