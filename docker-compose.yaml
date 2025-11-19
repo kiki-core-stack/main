@@ -55,7 +55,7 @@ services:
     container_name: '${PROJECT_NAME}-ops-workers-ts'
     environment:
       <<: *common-environments
-    image: '${PROJECT_NAME}/ops-workers-tss'
+    image: '${PROJECT_NAME}/ops-workers-ts'
     pull_policy: never
     restart: always
     secrets:
