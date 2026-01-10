@@ -1,5 +1,6 @@
 name: '${PROJECT_NAME}'
 
+# Anchors
 x-common-build-args: &common-build-args
   NPM_CONFIG_REGISTRY: '${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org}'
 
@@ -9,6 +10,18 @@ x-common-build-options: &common-build-options
 
 x-common-environments: &common-environments
   NODE_ENV: production
+
+x-networks: &networks
+  networks:
+    - default
+    # - infra_services
+
+networks:
+  default:
+    driver: bridge
+  infra_services:
+    external: true
+    name: '${PROJECT_NAME}-infra-services_default'
 
 secrets:
   MONGODB_URI:
@@ -32,6 +45,7 @@ services:
 
   # Management backend
   management-backend:
+    <<: *networks
     build:
       <<: *common-build-options
       context: ./management-backend
@@ -49,6 +63,7 @@ services:
 
   # Ops workers ts
   ops-workers-ts:
+    <<: *networks
     build:
       <<: *common-build-options
       context: ./ops-workers-ts
