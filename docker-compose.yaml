@@ -3,6 +3,7 @@ name: '${PROJECT_NAME}'
 # Anchors
 x-common-build-args: &common-build-args
   NPM_CONFIG_REGISTRY: '${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org}'
+  PNPM_CONFIG_REGISTRY: '${PNPM_CONFIG_REGISTRY:-https://registry.npmjs.org}'
 
 x-common-build-options: &common-build-options
   args:
