@@ -39,3 +39,5 @@ shopt -s dotglob nullglob
 apply_permissions "${REPO_ROOT}"
 find "${REPO_ROOT}" -name .git -prune -o \
     \( -name '*.sh' -type f -exec chmod 700 {} + \)
+
+chmod 700 ./update-pack-sha.mjs
