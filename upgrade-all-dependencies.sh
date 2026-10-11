@@ -1,23 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# shellcheck shell=bash
+# shellcheck disable=SC1091
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
+readonly SCRIPT_DIR
+source "${SCRIPT_DIR}/scripts/libs/common.sh"
+source "${SCRIPT_DIR}/scripts/libs/dependencies.sh"
 
-SCRIPT_NAME='upgrade-dependencies.sh'
+# Run
+main() {
+    run_dependency_scripts "${SCRIPT_DIR}" 'upgrade-dependencies.sh'
+}
 
-find . -type f -name "${SCRIPT_NAME}" | while read -r file; do
-    dir="$(dirname "$(realpath "${file}")")"
-    echo "Executing ${SCRIPT_NAME} in ${dir} ..."
-
-    (
-        cd "${dir}" || continue
-
-        if [[ -x "${SCRIPT_NAME}" ]]; then
-            ./"${SCRIPT_NAME}"
-        elif [[ -f "${SCRIPT_NAME}" ]]; then
-            bash "${SCRIPT_NAME}"
-        fi
-    )
-done
+main "$@"

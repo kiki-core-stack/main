@@ -1,29 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# shellcheck shell=bash
+# shellcheck disable=SC1091
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
+readonly SCRIPT_DIR
+source "${SCRIPT_DIR}/scripts/libs/common.sh"
 
-find . \
-    \( -name .cache \
-    -o -name .nitro \
-    -o -name .nuxt \
-    -o -name .output \
-    -o -name dist \
-    -o -name node_modules \
-    \) \
-    -type d \
-    -prune \
-    -exec rm -rf {} +
+# Constants/Variables
+readonly -a CLEANUP_DIRECTORY_NAMES=(
+    '.nitro'
+    '.nuxt'
+    '.output'
+    'dist'
+    'node_modules'
+)
 
-find . \
-    \( -name bun.lock \
-    -o -name bun.lockb \
-    -o -name pnpm-lock.yaml \
-    \) \
-    -type f \
-    -delete
+readonly -a CLEANUP_FILE_NAMES=(
+    'bun.lock'
+    'bun.lockb'
+    'Cargo.lock'
+    'pnpm-lock.yaml'
+)
 
-./upgrade-all-dependencies.sh
-./modify-files-permissions.sh
+# Functions
+cleanup_dependency_artifacts() {
+    local name
+    local -a directory_match_args=(-false)
+    local -a file_match_args=(-false)
+
+    for name in "${CLEANUP_DIRECTORY_NAMES[@]}"; do
+        directory_match_args+=(-o -name "${name}")
+    done
+
+    for name in "${CLEANUP_FILE_NAMES[@]}"; do
+        file_match_args+=(-o -name "${name}")
+    done
+
+    find . -name .git -prune -o \
+        \( -type d \( "${directory_match_args[@]}" \) -prune -exec rm -rf -- {} + \) -o \
+        \( -type f \( "${file_match_args[@]}" \) -exec rm -f -- {} + \)
+}
+
+# Run
+main() {
+    cd "${SCRIPT_DIR}"
+
+    log_info 'Cleaning dependency artifacts...'
+    cleanup_dependency_artifacts
+    log_success 'Cleaned dependency artifacts'
+
+    "${SCRIPT_DIR}/upgrade-all-dependencies.sh"
+    "${SCRIPT_DIR}/modify-files-permissions.sh"
+}
+
+main "$@"
