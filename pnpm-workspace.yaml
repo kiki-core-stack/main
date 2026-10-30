@@ -2,10 +2,8 @@ blockExoticSubdeps: true
 minimumReleaseAge: 1440
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
-
 minimumReleaseAgeExcludePrune: true
-minimumReleaseAgeExclude:
-  - '@kikiutils/eslint-config' # TODO: remove it
+# minimumReleaseAgeExclude:
 
 resolutionMode: highest
 trustLockfile: false
