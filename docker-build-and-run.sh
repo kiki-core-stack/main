@@ -15,7 +15,7 @@ cd "${SCRIPT_DIR}"
 readonly REMAINING_PHASE='@remaining'
 
 # Keep the default generic. Add service groups only when their build order matters.
-# Builds that declare build.ssh automatically use SSH_KEY_PATH or ~/.ssh/id_ed25519.
+# Builds use an SSH agent with SSH_KEY_PATH or ~/.ssh/id_ed25519.
 # Unlisted services are appended as one final phase. Use @remaining to place that
 # automatic phase between explicit groups.
 #
@@ -37,39 +37,14 @@ build_services() {
     docker compose "${compose_options[@]}" build "${build_options[@]}" "$@"
 }
 
-cleanup_ssh_agent() {
-    if [[ -n "${SSH_AGENT_PID:-}" ]]; then
-        ssh-agent -k >/dev/null 2>&1 || true
-        unset SSH_AGENT_PID SSH_AUTH_SOCK
-    fi
-}
-
-start_ssh_agent() {
-    local compose_config="$1"
-    local ssh_key_path="${SSH_KEY_PATH:-${HOME}/.ssh/id_ed25519}"
-
-    grep -Eq '^[[:space:]]+ssh:' <<<"${compose_config}" || return 0
-
-    eval "$(ssh-agent -s)"
-    trap cleanup_ssh_agent EXIT
-    ssh-add "${ssh_key_path}"
-}
-
 # Run
 main() {
-    local parallel
-    local services_output
-    local compose_config
-    local phase
-    local service
+    local parallel services_output phase service arg
     local has_remaining_phase=false
     local -a compose_options
-    local -a build_options=()
-    local -a all_services=()
-    local -a phase_services=()
-    local -a remaining_services=()
-    local -A known_services=()
-    local -A explicit_services=()
+    local -a build_options=() all_services=() phase_services=() remaining_services=()
+    local -a build_phases=("${BUILD_PHASES[@]}")
+    local -A known_services=() explicit_services=()
 
     parallel="$(nproc)"
     if ((parallel > 8)); then
@@ -87,19 +62,19 @@ main() {
         fi
     done
 
-    compose_config="$(docker compose config)"
     services_output="$(docker compose config --services)"
-    mapfile -t all_services <<<"${services_output}"
-    ((${#all_services[@]} > 0)) || {
+    [[ -n "${services_output}" ]] || {
         log_error 'No Compose services were found'
         return 1
     }
+
+    mapfile -t all_services <<<"${services_output}"
 
     for service in "${all_services[@]}"; do
         known_services["${service}"]=1
     done
 
-    for phase in "${BUILD_PHASES[@]}"; do
+    for phase in "${build_phases[@]}"; do
         if [[ "${phase}" == "${REMAINING_PHASE}" ]]; then
             [[ "${has_remaining_phase}" == false ]] || {
                 log_error "The ${REMAINING_PHASE} phase may only be used once"
@@ -131,13 +106,15 @@ main() {
         done
     done
 
+    [[ "${has_remaining_phase}" == true ]] || build_phases+=("${REMAINING_PHASE}")
+
     for service in "${all_services[@]}"; do
         [[ -n "${explicit_services[${service}]+set}" ]] || remaining_services+=("${service}")
     done
 
-    start_ssh_agent "${compose_config}"
+    source "${SCRIPT_DIR}/start-ssh-agent.sh"
 
-    for phase in "${BUILD_PHASES[@]}"; do
+    for phase in "${build_phases[@]}"; do
         if [[ "${phase}" == "${REMAINING_PHASE}" ]]; then
             build_services "${remaining_services[@]}"
         else
@@ -146,7 +123,6 @@ main() {
         fi
     done
 
-    [[ "${has_remaining_phase}" == true ]] || build_services "${remaining_services[@]}"
     docker compose up -d --remove-orphans
 }
 
