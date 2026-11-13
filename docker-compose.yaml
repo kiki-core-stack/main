@@ -13,7 +13,11 @@ secrets:
   REDIS_URL:
     environment: REDIS_URL
 
+volumes:
+  admin-frontend-static:
+
 include:
   - stacks/admin-frontend.compose.yaml
+  - stacks/gateway/compose.yaml
   - stacks/management-backend.compose.yaml
   - stacks/ops-workers-ts.compose.yaml

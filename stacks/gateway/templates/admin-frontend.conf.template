@@ -1,0 +1,24 @@
+server {
+    # Listen
+    listen 80;
+
+    # Root
+    root /srv/admin-frontend;
+
+    # Server name
+    server_name ${ADMIN_FRONTEND_SERVER_NAME};
+
+    # Locations
+    include /etc/nginx/snippets/nuxt.conf;
+
+    location /api {
+        include /etc/nginx/snippets/proxy.conf;
+        include /etc/nginx/snippets/websocket.conf;
+        proxy_pass http://management-backend;
+    }
+
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri $uri/ /index.html;
+    }
+}

@@ -9,4 +9,4 @@ services:
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/admin-frontend'
     restart: no
     volumes:
-      - '${ADMIN_FRONTEND_STATIC_DIR_PATH:?must be set}:/static'
+      - admin-frontend-static:/static

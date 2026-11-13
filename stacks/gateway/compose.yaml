@@ -1,0 +1,36 @@
+services:
+  gateway:
+    container_name: '${PROJECT_NAME:?must be set}-gateway'
+    depends_on:
+      # Frontends exit after copying their static files into the shared volumes.
+      admin-frontend:
+        condition: service_completed_successfully
+      management-backend:
+        condition: service_started
+    environment:
+      # Server names
+      ADMIN_FRONTEND_SERVER_NAME: '${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
+
+      # Substitute only server names so nginx variables in templates stay untouched.
+      NGINX_ENVSUBST_FILTER: _SERVER_NAME$$
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/sites
+    image: 'nginx:1.31.8-alpine-slim'
+    logging:
+      driver: json-file
+      options:
+        max-file: '5'
+        max-size: 10m
+    networks:
+      - default
+    ports:
+      - '127.0.0.1:${GATEWAY_EXPOSE_PORT:?must be set}:80'
+    restart: always
+    # The entrypoint only renders templates into an existing writable directory.
+    tmpfs:
+      - /etc/nginx/sites
+    volumes:
+      - './nginx.conf:/etc/nginx/nginx.conf:ro'
+      - './snippets:/etc/nginx/snippets:ro'
+      - './templates:/etc/nginx/templates:ro'
+      - './upstreams:/etc/nginx/upstreams:ro'
+      - 'admin-frontend-static:/srv/admin-frontend:ro'
