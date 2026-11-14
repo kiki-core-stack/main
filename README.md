@@ -33,7 +33,7 @@ flowchart LR
 
 - **範本傳播**：每個 repo 以 `fetch-and-merge.sh` 合併其上游範本；共用的改動在最上游修改，再逐層合併下去。下游專案（各自的 fork）也以同樣方式合併 KCS。
 - **pack**：各 repo 以 git commit 依賴（`@kcs-project/pack`）。
-- **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔（見 pack README）。
+- **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔（見 [pack README](https://github.com/kiki-core-stack/pack)）。
 - **job**：後端在同一個 transaction 寫入資料與 job outbox event，ops-workers-ts 取出後執行。
 
 ## 跨 repo 約定
@@ -45,7 +45,7 @@ flowchart LR
 
 1. 準備 MongoDB（需 replica set，transaction 用）與 Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）；可用 infra-services 啟動，也可自行準備，連線設定在各 repo 的 env。
 2. 把服務 repo clone 到 `repos/`，執行 `install-all-dependencies.sh`。
-3. 依各 repo 的 README 設定 `.env.development.local`（範例為 `.env.development`）。
+3. 依各 repo 的 docs 設定 `.env.development.local`（範例為 `.env.development`）。
 4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ops-workers-ts、management-backend、admin-frontend（前端需等後端起來才能產生檔案）。
 
 dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定，把 `/api` 轉給 host 上的 management-backend dev server、`/files` 對應本機檔案儲存、其餘轉給 Nuxt dev server（含 HMR）；host 的 proxy 只需把網域轉到 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`。
