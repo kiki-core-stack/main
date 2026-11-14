@@ -12,6 +12,9 @@ services:
     build:
       args:
         <<: *common-build-args
+      # Private git dependencies are fetched through the SSH agent started by docker-build-and-run.sh.
+      ssh:
+        - default
     env_file:
       - ./.env.services
     environment:
@@ -31,6 +34,10 @@ services:
     build:
       args:
         <<: *common-build-args
+      ssh:
+        - default
+    env_file:
+      - ./.env.services
     environment:
       <<: *common-environments
     logging:

@@ -1,6 +1,7 @@
 services:
-  # Gives the service user (10001:nogroup in the service images) ownership of the host directories mounted into the
-  # services before they start; only entries not yet owned by it are changed, so restarts stay fast on large storage.
+  # Gives the service user (10001:nogroup in the service images) ownership of the host directories and volumes mounted
+  # into the services before they start; only entries not yet owned by it are changed, so restarts stay fast on large
+  # storage.
   volume-permissions:
     command:
       - -c
@@ -9,11 +10,10 @@ services:
         mkdir -p \
           /files \
           /logs/management-backend \
-          /logs/ops-workers-ts
+          /logs/ops-workers-ts \
+          /volumes
 
-        for path in /files /logs; do
-            find "$${path}" \( \! -user 10001 -o \! -group 65534 \) -exec chown 10001:65534 {} +
-        done
+        find /files /logs /volumes \( \! -user 10001 -o \! -group 65534 \) -exec chown 10001:65534 {} +
     container_name: '${PROJECT_NAME:?must be set}-volume-permissions'
     entrypoint:
       - /bin/sh
@@ -25,3 +25,4 @@ services:
     volumes:
       - '${FILE_STORAGE_LOCAL_BASE_PATH:?must be set}:/files'
       - '${LOGS_ROOT_PATH:?must be set}:/logs'
+      # Named volumes written by the service user, each at /volumes/<volume>.

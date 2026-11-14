@@ -10,6 +10,7 @@ server {
 
     # Locations
     include /etc/nginx/snippets/files.conf;
+    include /etc/nginx/snippets/internal-apis.conf;
     include /etc/nginx/snippets/nuxt.conf;
 
     location /api {
