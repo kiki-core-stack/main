@@ -9,6 +9,7 @@ server {
     server_name ${ADMIN_FRONTEND_SERVER_NAME};
 
     # Locations
+    include /etc/nginx/snippets/files.conf;
     include /etc/nginx/snippets/nuxt.conf;
 
     location /api {

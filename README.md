@@ -46,7 +46,13 @@ flowchart LR
 1. 準備 MongoDB（需 replica set，transaction 用）與 Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）；可用 infra-services 啟動，也可自行準備，連線設定在各 repo 的 env。
 2. 把服務 repo clone 到 `repos/`，執行 `install-all-dependencies.sh`。
 3. 依各 repo 的 README 設定 `.env.development.local`（範例為 `.env.development`）。
-4. `tmux-run-all-dev.sh` 依序啟動 ops-workers-ts、management-backend、admin-frontend（前端需等後端起來才能產生檔案）。
+4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ops-workers-ts、management-backend、admin-frontend（前端需等後端起來才能產生檔案）。
+
+dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定，把 `/api` 轉給 host 上的 management-backend dev server、`/files` 對應本機檔案儲存、其餘轉給 Nuxt dev server（含 HMR）；host 的 proxy 只需把網域轉到 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`。
+
+- 以 `dev-gateway.sh` 操作（參數交給 `docker compose`，例如 `up -d`、`down`、`logs -f`），以 `network_mode: host` 執行。
+- 設定只讀 `.env.development.local`（範例 `.env.development`）：各 dev server 的 port 須與各 repo 自己 env 的 port 相同；同一台機器跑多套時，`PROJECT_NAME` 與 `GATEWAY_EXPOSE_PORT` 各自不同。
+- 經由網域存取時，admin-frontend 的 `DEV_VITE_SERVER_ALLOWED_HOSTS` 要包含該網域。
 
 pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴改為遠端最新 commit，再執行 `install-all-dependencies.sh`。
 
@@ -59,6 +65,6 @@ pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 
 
 ## 部署
 
-- `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（nginx）把 `/api` 轉給 management-backend，其餘給 admin-frontend 的靜態檔。
+- `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/files` 對應本機檔案儲存（`FILE_STORAGE_LOCAL_BASE_PATH`，`private/` 不對外），其餘給 admin-frontend 的靜態檔。
 - 設定：`.env`（範例 `.env.example`）與 `.env.services`（範例 `.env.services.example`）；MongoDB、Redis 連線（`MONGODB_URI`、`REDIS_URL`）以 compose secret 傳入，可指向 infra-services 或自行準備的服務。
 - `docker-build-and-run.sh` 建置並啟動。

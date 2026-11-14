@@ -18,6 +18,6 @@ volumes:
 
 include:
   - stacks/admin-frontend.compose.yaml
-  - stacks/gateway/compose.yaml
+  - stacks/gateway/prod/compose.yaml
   - stacks/management-backend.compose.yaml
   - stacks/ops-workers-ts.compose.yaml

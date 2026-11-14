@@ -1,0 +1,5 @@
+server {
+    listen 127.0.0.1:${GATEWAY_EXPOSE_PORT} default_server;
+    server_name _;
+    return 444;
+}
