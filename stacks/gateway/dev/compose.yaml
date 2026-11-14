@@ -1,4 +1,4 @@
-# Routes requests to the dev servers running on the host; see the main README.
+# Routes requests to the dev servers running on the host; see docs/main.md.
 name: '${PROJECT_NAME:?must be set}-dev'
 
 services:
