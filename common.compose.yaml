@@ -10,6 +10,8 @@ services:
     env_file:
       - ./.env.services
     environment:
+      # Mount point of FILE_STORAGE_LOCAL_BASE_PATH (host) in services using local file storage.
+      FILE_STORAGE_LOCAL_BASE_PATH: /files
       NODE_ENV: production
     logging:
       driver: json-file
