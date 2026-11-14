@@ -1,6 +1,9 @@
 services:
   common-gateway:
-    image: 'nginx:1.31.8-alpine-slim'
+    environment:
+      # Silences the image entrypoint scripts; nginx's own logs are unaffected.
+      NGINX_ENTRYPOINT_QUIET_LOGS: '1'
+    image: 'nginx:1.31-alpine-slim'
     logging:
       driver: json-file
       options:
