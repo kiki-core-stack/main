@@ -2,6 +2,11 @@ x-common-build-args: &common-build-args
   NPM_CONFIG_REGISTRY: '${NPM_CONFIG_REGISTRY:?must be set}'
   PNPM_CONFIG_REGISTRY: '${PNPM_CONFIG_REGISTRY:?must be set}'
 
+x-common-environments: &common-environments
+  # Mount point of FILE_STORAGE_LOCAL_BASE_PATH (host) in services using local file storage.
+  FILE_STORAGE_LOCAL_BASE_PATH: /files
+  NODE_ENV: production
+
 services:
   common-service:
     build:
@@ -10,9 +15,7 @@ services:
     env_file:
       - ./.env.services
     environment:
-      # Mount point of FILE_STORAGE_LOCAL_BASE_PATH (host) in services using local file storage.
-      FILE_STORAGE_LOCAL_BASE_PATH: /files
-      NODE_ENV: production
+      <<: *common-environments
     logging:
       driver: json-file
       options:
@@ -29,7 +32,7 @@ services:
       args:
         <<: *common-build-args
     environment:
-      NODE_ENV: production
+      <<: *common-environments
     logging:
       driver: json-file
       options:
