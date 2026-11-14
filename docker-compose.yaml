@@ -17,7 +17,11 @@ volumes:
   admin-frontend-static:
 
 include:
-  - stacks/admin-frontend.compose.yaml
+  # Platform: request routing and host directory setup shared by the services
   - stacks/gateway/prod/compose.yaml
+  - stacks/volume-permissions.compose.yaml
+
+  # Services; add each new service's stack here
+  - stacks/admin-frontend.compose.yaml
   - stacks/management-backend.compose.yaml
   - stacks/ops-workers-ts.compose.yaml

@@ -6,9 +6,13 @@ services:
     build:
       context: ../repos/ops-workers-ts
     container_name: '${PROJECT_NAME:?must be set}-ops-workers-ts'
+    depends_on:
+      volume-permissions:
+        condition: service_completed_successfully
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/ops-workers-ts'
     secrets:
       - MONGODB_URI
       - REDIS_URL
     volumes:
       - '${FILE_STORAGE_LOCAL_BASE_PATH:?must be set}:/files'
+      - '${LOGS_ROOT_PATH:?must be set}/ops-workers-ts:/logs'

@@ -67,4 +67,5 @@ pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 
 
 - `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/files` 對應本機檔案儲存（`FILE_STORAGE_LOCAL_BASE_PATH`，`private/` 不對外），其餘給 admin-frontend 的靜態檔。
 - 設定：`.env`（範例 `.env.example`）與 `.env.services`（範例 `.env.services.example`）；MongoDB、Redis 連線（`MONGODB_URI`、`REDIS_URL`）以 compose secret 傳入，可指向 infra-services 或自行準備的服務。
+- 掛載進服務的 host 目錄由 `volume-permissions` 在服務啟動前建立，並把擁有者設為服務 image 的使用者（`10001:nogroup`）：`FILE_STORAGE_LOCAL_BASE_PATH` 掛在 `/files`（各服務共用）；`LOGS_ROOT_PATH/<服務>` 掛在 `/logs`（每個服務各自一個，新增服務時一併加進 `volume-permissions`）。
 - `docker-build-and-run.sh` 建置並啟動。
