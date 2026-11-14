@@ -54,7 +54,7 @@ dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定
 - 設定只讀 `.env.development.local`（範例 `.env.development`）：各 dev server 的 port 須與各 repo 自己 env 的 port 相同；同一台機器跑多套時，`PROJECT_NAME` 與 `GATEWAY_EXPOSE_PORT` 各自不同。
 - 經由網域存取時，admin-frontend 的 `DEV_VITE_SERVER_ALLOWED_HOSTS` 要包含該網域。
 
-pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴改為遠端最新 commit，再執行 `install-all-dependencies.sh`。
+pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴改為 `.env.development.local` 的 `PACK_GIT_REF`（預設 `HEAD`，可為分支、tag 或完整 commit SHA）對應的 commit，再執行 `install-all-dependencies.sh`。
 
 其他腳本：
 
