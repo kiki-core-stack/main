@@ -33,12 +33,12 @@ flowchart LR
 
 - **範本傳播**：每個 repo 以 `fetch-and-merge.sh` 合併其上游範本；共用的改動在最上游修改，再逐層合併下去。下游專案（各自的 fork）也以同樣方式合併 KCS。
 - **pack**：各 repo 以 git commit 依賴（`@kcs-project/pack`）。
-- **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔（見 [pack README](https://github.com/kiki-core-stack/pack)）。
+- **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔（見 [pack docs](https://github.com/kiki-core-stack/pack/blob/main/docs/pack.md)）。
 - **job**：後端在同一個 transaction 寫入資料與 job outbox event，ops-workers-ts 取出後執行。
 
 ## 跨 repo 約定
 
-- API 回應格式、錯誤碼、多語系、權限、enum 數值的規則見 [pack README](https://github.com/kiki-core-stack/pack)。
+- API 回應格式、錯誤碼、多語系、權限、enum 數值的規則見 [pack docs](https://github.com/kiki-core-stack/pack/blob/main/docs/pack.md)。
 - 上游（KCS）commit 用英文約定式提交。
 
 ## 開發
