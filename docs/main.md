@@ -8,6 +8,7 @@ KCS 的主 repo：整合各服務 repo、部署設定與共用腳本。各服務
 | --- | --- | --- | --- |
 | main | 本 repo | 部署（compose、gateway）、跨 repo 腳本 | pnpm |
 | [pack](https://github.com/kiki-core-stack/pack) | 獨立 | 共用程式碼：model、常數與型別、錯誤碼、多語系、權限、zod 擴充、provider、Hono 共用元件 | pnpm |
+| [pack-rs](https://github.com/kiki-core-stack/pack-rs) | 獨立 | pack 的 Rust 對應，供下游 Rust 服務使用：API client（envelope、`ApiResponseError`）、WS.IO 事件名稱（由 pack 產生）、Redis key、共用 enum | cargo |
 | [base-backend](https://github.com/kiki-core-stack/base-backend) | 獨立 | 後端範本：auto-hono 加上 pack 的錯誤處理、多語系、cookie session | bun |
 | management-backend | `repos/` | 總管理後台 API（`/api/admin/*`）：管理員、身分組與權限、email／sms、平台設定 | bun |
 | admin-frontend | `repos/` | 總管理後台前端（Nuxt、Element Plus） | pnpm |
