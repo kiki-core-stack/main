@@ -11,6 +11,7 @@ services:
         condition: service_completed_successfully
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/management-backend'
     secrets:
+      - AUTH_SECRET_ENCRYPTION_KEYS
       - MONGODB_URI
       - REDIS_URL
     volumes:

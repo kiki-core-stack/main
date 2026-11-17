@@ -8,6 +8,8 @@ networks:
     name: '${PROJECT_NAME:?must be set}-infra-services_default'
 
 secrets:
+  AUTH_SECRET_ENCRYPTION_KEYS:
+    environment: AUTH_SECRET_ENCRYPTION_KEYS
   MONGODB_URI:
     environment: MONGODB_URI
   REDIS_URL:
