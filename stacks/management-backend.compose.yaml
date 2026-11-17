@@ -9,6 +9,8 @@ services:
     depends_on:
       volume-permissions:
         condition: service_completed_successfully
+    environment:
+      ADMIN_AUTH_ORIGINS: '${ADMIN_AUTH_ORIGINS:?must be set}'
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/management-backend'
     secrets:
       - AUTH_SECRET_ENCRYPTION_KEYS
