@@ -1,6 +1,6 @@
 server {
     # Listen
-    listen 127.0.0.1:${GATEWAY_EXPOSE_PORT};
+    listen ${GATEWAY_EXPOSE_HOST}:${GATEWAY_EXPOSE_PORT};
 
     # Server name
     server_name ${ADMIN_FRONTEND_SERVER_NAME};

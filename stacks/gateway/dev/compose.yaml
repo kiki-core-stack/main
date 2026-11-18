@@ -9,6 +9,7 @@ services:
     container_name: '${PROJECT_NAME:?must be set}-dev-gateway'
     environment:
       # Gateway
+      GATEWAY_EXPOSE_HOST: '${GATEWAY_EXPOSE_HOST:-127.0.0.1}'
       GATEWAY_EXPOSE_PORT: '${GATEWAY_EXPOSE_PORT:?must be set}'
 
       # Services; ports of the dev servers on the host, the same as in each repo's env.
@@ -20,8 +21,8 @@ services:
       # Management backend
       MANAGEMENT_BACKEND_PORT: '${MANAGEMENT_BACKEND_PORT:?must be set}'
 
-      # Substitute only ports and server names so nginx variables in templates stay untouched.
-      NGINX_ENVSUBST_FILTER: _(PORT|SERVER_NAME)$$
+      # Substitute only hosts, ports and server names so nginx variables in templates stay untouched.
+      NGINX_ENVSUBST_FILTER: _(HOST|PORT|SERVER_NAME)$$
       NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/sites
     # Dev servers listen on the host loopback, which a bridge network cannot reach.
     network_mode: host
