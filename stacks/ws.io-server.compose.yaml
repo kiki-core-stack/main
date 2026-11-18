@@ -1,0 +1,24 @@
+services:
+  ws-io-server:
+    extends:
+      file: ../common.compose.yaml
+      service: common-service
+    build:
+      context: ../repos/ws.io-server
+    container_name: '${PROJECT_NAME:?must be set}-ws.io-server'
+    depends_on:
+      volume-permissions:
+        condition: service_completed_successfully
+    environment:
+      ADMIN_AUTH_ORIGINS: '${ADMIN_AUTH_ORIGINS:?must be set}'
+      MANAGEMENT_BACKEND_API_BASE_URL: http://management-backend:8080
+    image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/ws.io-server'
+    secrets:
+      - MONGODB_URI
+      - REDIS_URL
+      - source: MANAGEMENT_BACKEND_WS_IO_AUTH_KEY
+        target: MANAGEMENT_BACKEND_AUTH_KEY
+      - source: MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN
+        target: MANAGEMENT_BACKEND_API_INTROSPECTION_TOKEN
+    volumes:
+      - '${LOGS_ROOT_PATH:?must be set}/ws.io-server:/logs'

@@ -10,6 +10,8 @@ services:
         condition: service_completed_successfully
       management-backend:
         condition: service_started
+      ws-io-server:
+        condition: service_started
     environment:
       # Server names
       ADMIN_FRONTEND_SERVER_NAME: '${ADMIN_FRONTEND_SERVER_NAME:?must be set}'

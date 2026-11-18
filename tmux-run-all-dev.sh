@@ -16,6 +16,8 @@ readonly SCRIPT_NAME='tmux-run-dev.sh'
 # Run
 main() {
     "${SCRIPT_DIR}/dev-gateway.sh" up -d
+    "${REPOS_DIR}/ws.io-server/${SCRIPT_NAME}"
+    sleep 3
     "${REPOS_DIR}/ops-workers-ts/${SCRIPT_NAME}"
     "${REPOS_DIR}/management-backend/${SCRIPT_NAME}"
     # The frontend generates files from the backend on start.

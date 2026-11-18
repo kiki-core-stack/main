@@ -16,6 +16,10 @@ services:
       - AUTH_SECRET_ENCRYPTION_KEYS
       - MONGODB_URI
       - REDIS_URL
+      - source: MANAGEMENT_BACKEND_WS_IO_AUTH_KEY
+        target: WS_IO_AUTH_KEY
+      - source: MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN
+        target: WS_IO_INTROSPECTION_TOKEN
     volumes:
       - '${FILE_STORAGE_LOCAL_BASE_PATH:?must be set}:/files'
       - '${LOGS_ROOT_PATH:?must be set}/management-backend:/logs'

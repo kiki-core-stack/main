@@ -10,6 +10,10 @@ networks:
 secrets:
   AUTH_SECRET_ENCRYPTION_KEYS:
     environment: AUTH_SECRET_ENCRYPTION_KEYS
+  MANAGEMENT_BACKEND_WS_IO_AUTH_KEY:
+    environment: MANAGEMENT_BACKEND_WS_IO_AUTH_KEY
+  MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN:
+    environment: MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN
   MONGODB_URI:
     environment: MONGODB_URI
   REDIS_URL:
@@ -27,3 +31,4 @@ include:
   - stacks/admin-frontend.compose.yaml
   - stacks/management-backend.compose.yaml
   - stacks/ops-workers-ts.compose.yaml
+  - stacks/ws.io-server.compose.yaml

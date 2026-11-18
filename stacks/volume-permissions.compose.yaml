@@ -11,6 +11,7 @@ services:
           /files \
           /logs/management-backend \
           /logs/ops-workers-ts \
+          /logs/ws.io-server \
           /volumes
 
         find /files /logs /volumes \( \! -user 10001 -o \! -group 65534 \) -exec chown 10001:65534 {} +

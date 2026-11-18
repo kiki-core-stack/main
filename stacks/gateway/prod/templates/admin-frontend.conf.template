@@ -19,6 +19,12 @@ server {
         proxy_pass http://management-backend;
     }
 
+    location /ws.io {
+        include /etc/nginx/snippets/proxy.conf;
+        include /etc/nginx/snippets/websocket.conf;
+        proxy_pass http://ws-io-server;
+    }
+
     location / {
         add_header Cache-Control "no-cache";
         try_files $uri $uri/ /index.html;

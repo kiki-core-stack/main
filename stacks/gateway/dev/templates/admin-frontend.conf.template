@@ -15,6 +15,12 @@ server {
         proxy_pass http://127.0.0.1:${MANAGEMENT_BACKEND_PORT};
     }
 
+    location /ws.io {
+        include /etc/nginx/snippets/proxy.conf;
+        include /etc/nginx/snippets/websocket.conf;
+        proxy_pass http://127.0.0.1:${WS_IO_SERVER_PORT};
+    }
+
     # Nuxt dev server, including the Vite HMR websocket.
     location / {
         include /etc/nginx/snippets/proxy.conf;

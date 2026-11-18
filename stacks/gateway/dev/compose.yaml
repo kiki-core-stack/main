@@ -21,6 +21,9 @@ services:
       # Management backend
       MANAGEMENT_BACKEND_PORT: '${MANAGEMENT_BACKEND_PORT:?must be set}'
 
+      # ws.io server
+      WS_IO_SERVER_PORT: '${WS_IO_SERVER_PORT:?must be set}'
+
       # Substitute only hosts, ports and server names so nginx variables in templates stay untouched.
       NGINX_ENVSUBST_FILTER: _(HOST|PORT|SERVER_NAME)$$
       NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/sites
