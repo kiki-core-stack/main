@@ -56,25 +56,20 @@ flowchart LR
 3. 依各 repo 的 docs 設定 `.env.development.local`（範例為 `.env.development`）。
 4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ws.io-server、ops-workers-ts、management-backend、admin-frontend（management-backend 啟動時連線 ws.io-server；前端需等後端起來才能產生檔案）。
 
-dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定，把 `/api` 轉給 host 上的 management-backend dev server、`/ws.io` 轉給 ws.io-server、`/files` 對應本機檔案儲存、其餘轉給 Nuxt dev server（含 HMR）。gateway 只回應 `ADMIN_FRONTEND_SERVER_NAME` 這個 Host（其他 Host 直接斷線），host 的 proxy 把該網域轉到 `127.0.0.1:${GATEWAY_EXPOSE_PORT}` 即可。
+dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定（路由見「部署」），只是上游換成 host 上的各 dev server（含 Nuxt HMR）。
 
-- 以 `dev-gateway.sh` 操作（參數交給 `docker compose`，例如 `up -d`、`down`、`logs -f`），以 `network_mode: host` 執行。
+- 以 `dev-gateway.sh` 操作（參數交給 `docker compose`），以 `network_mode: host` 執行。
 - 設定只讀 `.env.development.local`（範例 `.env.development`）：各 dev server 的 port 須與各 repo 自己 env 的 port 相同；同一台機器跑多套時，`PROJECT_NAME` 與 `GATEWAY_EXPOSE_PORT` 各自不同。
 - 預設只監聽 `127.0.0.1`；要讓區網其他機器直接連線時，把 `GATEWAY_EXPOSE_HOST` 設為 `0.0.0.0`。
 - 經由網域存取時，admin-frontend 的 `DEV_VITE_SERVER_ALLOWED_HOSTS` 要包含該網域。
 
-pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴（`package.json` 的 `@kcs-project/pack` 與 `Cargo.toml` 的 `kcs-project-pack`，各自以依賴所指的 remote 解析）改為 `PACK_GIT_REF`（`HEAD`、分支、tag 或完整 commit SHA）對應的 commit；`PACK_GIT_REF` 只從 `.env.development.local` 讀取，檔案不存在或沒有設定就報錯，不會改讀 `.env.development`，再執行 `install-all-dependencies.sh`。
+pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴（`package.json` 與 `Cargo.toml`）改為 `PACK_GIT_REF` 對應的 commit，再執行 `install-all-dependencies.sh`。`PACK_GIT_REF` 只從 `.env.development.local` 讀取，不會改讀 `.env.development`。
 
-其他腳本：
-
-- `scripts/pull-all-repos.sh`：pull 所有 repo。
-- `scripts/check-all-repos.sh`：對所有 repo 依其 lockfile 判斷工具鏈，執行 `lint:fix`（會改檔）與 `typecheck`；Rust repo 為 `cargo format-fix` 與 `cargo lint`。
-- `upgrade-all-dependencies.sh`、`cleanup-and-upgrade-all-dependencies.sh`：升級依賴。
-- Shell 腳本規範見 `scripts/RULES.md`。
+`scripts/check-all-repos.sh` 會對所有 repo 執行自動修正（會改檔）與型別檢查；Shell 腳本規範見 `scripts/RULES.md`。
 
 ## 部署
 
 - `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/ws.io` 轉給 ws.io-server、`/files` 對應本機檔案儲存（`FILE_STORAGE_LOCAL_BASE_PATH`，`private/` 不對外），其餘給 admin-frontend 的靜態檔；`/api/internal/*` 只供服務之間呼叫，gateway 一律回 404。gateway 只綁 host 的 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`、只回應 `ADMIN_FRONTEND_SERVER_NAME`，對外由 host 的反向代理轉入。
-- 設定：`.env`（範例 `.env.example`）與 `.env.services`（範例 `.env.services.example`，以 `env_file` 給所有服務）。全專案共用的秘密寫在 `.env`、以 compose secret 傳入，各服務不需在自己的 env 重複設定：`MONGODB_URI`、`REDIS_URL`（可指向 infra-services 或自行準備的服務）、加密資料庫內秘密的金鑰 `AUTH_SECRET_ENCRYPTION_KEYS`，以及 management-backend 與 ws.io-server 之間的 auth key `MANAGEMENT_BACKEND_WS_IO_AUTH_KEY` 與 introspection token `MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN`（至少 32 bytes；compose 依兩邊服務各自的變數名稱傳入）。`ADMIN_AUTH_ORIGINS`（admin-frontend 的 origin）不是秘密，同樣寫在 `.env`，由 compose 以環境變數傳給需要驗證管理員的服務，確保各服務的值一致。`COOKIE_SESSION_KEYS` 不共用，各服務在自己的 env 設定。
+- 設定：`.env`（範例 `.env.example`）與 `.env.services`（範例 `.env.services.example`，給所有服務）。全專案共用的秘密寫在 `.env`、以 compose secret 傳入，各服務不在自己的 env 重複設定：`MONGODB_URI`、`REDIS_URL`、`AUTH_SECRET_ENCRYPTION_KEYS`，以及 management-backend 與 ws.io-server 之間的 `MANAGEMENT_BACKEND_WS_IO_AUTH_KEY`、`MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN`（至少 32 bytes）。`ADMIN_AUTH_ORIGINS` 不是秘密，但同樣只寫在 `.env`，由 compose 傳給需要驗證管理員的服務，確保各服務的值一致。`COOKIE_SESSION_KEYS` 不共用，各服務在自己的 env 設定。
 - 掛載進服務的 host 目錄由 `volume-permissions` 在服務啟動前建立，並把擁有者設為服務 image 的使用者（`10001:nogroup`）：`FILE_STORAGE_LOCAL_BASE_PATH` 掛在 `/files`（各服務共用）；`LOGS_ROOT_PATH/<服務>` 掛在 `/logs`（每個服務各自一個，新增服務時一併加進 `volume-permissions`）；由服務使用者寫入的 named volume 也掛進 `volume-permissions` 的 `/volumes/<volume>`。
-- `docker-build-and-run.sh` 建置並啟動：以 SSH agent（`SSH_KEY_PATH`，預設 `~/.ssh/id_ed25519`）取得私有 git 依賴；服務之間有建置順序要求時才調整檔內的 `BUILD_PHASES`；加 `-p` 會先拉取最新 image。
+- `docker-build-and-run.sh` 建置並啟動；建置時以 SSH agent（`SSH_KEY_PATH`）取得私有 git 依賴。
