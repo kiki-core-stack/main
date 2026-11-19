@@ -11,6 +11,18 @@ services:
         condition: service_completed_successfully
     environment:
       ADMIN_AUTH_ORIGIN: 'https://${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
+    # The workers start listening only after the system initialization, so any response means it has finished.
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_interval: 1s
+      start_period: 120s
+      test:
+        - CMD
+        - bun
+        - -e
+        - await fetch('http://127.0.0.1:8080/')
+      timeout: 5s
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/management-backend'
     secrets:
       - AUTH_SECRET_ENCRYPTION_KEYS

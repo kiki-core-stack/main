@@ -54,7 +54,7 @@ flowchart LR
 1. 準備 MongoDB（需 replica set，transaction 用）與 Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）；可用 infra-services 啟動，也可自行準備，連線設定在各 repo 的 env。
 2. 把服務 repo clone 到 `repos/`，執行 `install-all-dependencies.sh`。
 3. 依各 repo 的 docs 設定 `.env.development.local`（範例為 `.env.development`）。
-4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ws.io-server、ops-workers-ts、management-backend、admin-frontend（management-backend 啟動時連線 ws.io-server；前端需等後端起來才能產生檔案）。
+4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ws.io-server、ops-workers-ts、management-backend、admin-frontend（management-backend 啟動時連線 ws.io-server 並執行系統初始化；前端需等後端起來才能產生檔案）。
 
 dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定（路由見「部署」），只是上游換成 host 上的各 dev server（含 Nuxt HMR）。
 
@@ -72,4 +72,5 @@ pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 
 - `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/ws.io` 轉給 ws.io-server、`/files` 對應本機檔案儲存（`FILE_STORAGE_LOCAL_BASE_PATH`，`private/` 不對外），其餘給 admin-frontend 的靜態檔；`/api/internal/*` 只供服務之間呼叫，gateway 一律回 404。gateway 只綁 host 的 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`、只回應 `ADMIN_FRONTEND_SERVER_NAME`，對外由 host 的反向代理轉入。
 - 設定：`.env`（範例 `.env.example`）與 `.env.services`（範例 `.env.services.example`，給所有服務）。全專案共用的秘密寫在 `.env`、以 compose secret 傳入，各服務不在自己的 env 重複設定：`MONGODB_URI`、`REDIS_URL`、`AUTH_SECRET_ENCRYPTION_KEYS`，以及 management-backend 與 ws.io-server 之間的 `MANAGEMENT_BACKEND_WS_IO_AUTH_KEY`、`MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN`（至少 32 bytes）。需要驗證管理員的服務所用的 `ADMIN_AUTH_ORIGIN` 由 compose 以 `ADMIN_FRONTEND_SERVER_NAME` 組出（`https://<網域>`），不另外設定。`COOKIE_SESSION_KEYS` 不共用，各服務在自己的 env 設定。
 - 掛載進服務的 host 目錄由 `volume-permissions` 在服務啟動前建立，並把擁有者設為服務 image 的使用者（`10001:nogroup`）：`FILE_STORAGE_LOCAL_BASE_PATH` 掛在 `/files`（各服務共用）；`LOGS_ROOT_PATH/<服務>` 掛在 `/logs`（每個服務各自一個，新增服務時一併加進 `volume-permissions`）；由服務使用者寫入的 named volume 也掛進 `volume-permissions` 的 `/volumes/<volume>`。
+- 系統初始化（預設管理員、平台設定等，pack `initializeSystem`）只由 management-backend 在啟動 workers 前執行一次，其他服務不執行。management-backend 的 healthcheck 在初始化完成、開始回應後才通過；其他連線資料庫的服務一律在 compose 加上 `depends_on: management-backend: condition: service_healthy`，不逐一判斷是否依賴初始化結果。
 - `docker-build-and-run.sh` 建置並啟動；建置時以 SSH agent（`SSH_KEY_PATH`）取得私有 git 依賴。

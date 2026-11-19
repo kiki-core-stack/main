@@ -43,8 +43,7 @@
 
 ### 驗證證據
 
-- [ ] 把登入、密碼金鑰、雙重驗證、驗證身分、登入裝置管理等流程寫成可重跑的 Playwright 腳本並提交（虛擬密碼金鑰以 CDP `WebAuthn.addVirtualAuthenticator`，TOTP 以畫面上的密鑰計算）；同一份腳本即 QA 的測試流程。
-- [ ] 每次 UI 或流程改動附上腳本產生的截圖或錄影作為審查依據。
+- [ ] 每次 UI 或流程改動附上截圖或錄影作為審查依據。
 - [ ] 形式驗證（TLA+ 等）只考慮並行邏輯（工作階段換發與全部踢除的競態等），優先度最低。
 
 ## Auth
@@ -57,14 +56,12 @@
 
 ## 併發與資料完整性
 
-- [ ] 初始化鎖：`pack/src/init/index.ts` 以 10 秒的 Redis key 搶初始化，沒搶到的服務或 thread 不等初始化完成就直接進入 ready。改為等待初始化完成，或正式環境改由獨立的 init container 先執行。
 - [ ] 刪除路由 read→check→delete：`admin/role`、`email/provider`、`sms/provider` 的 `[id]/index.delete.ts` 查詢 → 檢查引用 → `deleteOne()`，中間沒有 transaction／CAS；檢查後另一個請求仍可新增引用，原刪除照樣執行。下游沿用此寫法的刪除路由一併受影響。
 
 ## 後端共用
 
 - [ ] `paginateModelData`（`management-backend/src/globals/libs/model.ts`）的 populate 過濾支援父子路徑：目前以完整字串相等比對 `fields`，改成巢狀路徑後，請求 `fields: ['payment']` 不會保留 `payment.provider`／`payment.channel` 這類 populate。
 - [ ] `pack/src/utils/image.ts` 的轉換函式改為通用的輸入／輸出選項（例如單一 options 物件），避免位置參數隨需求增加；下游已需要 resize 選項（目前以多加一個 `resizeOptions` 位置參數實作），新介面需涵蓋。
-- [ ] 電子郵件／簡訊 provider 快取（`pack/src/libs/email.ts`、ops-workers-ts `src/modules/{email,sms}/send-job/worker.ts` 的 `TODO: cache(s)`）：確認為瓶頸再做；做法為 pack 共用的行程內短時快取（`lru-cache` 的 `fetchMethod` + `ttl`），讓下游其他「啟用中 provider 清單」也能共用。
 - [ ] SMS provider class 新增取得餘額或點數的方法，串上 management-backend 與 admin-frontend。
 - [ ] Outbox event 傳遞改為 MongoDB Outbox → CDC → Kafka → BullMQ → Worker：CDC／Kafka 取代目前自行掃描、claim 與發布 outbox 的流程，BullMQ 保留工作排隊、執行、重試、延遲與排程。另立架構工作，不阻擋現有功能，不考慮舊資料。
 
@@ -81,7 +78,6 @@
 ## 審查
 
 - [ ] 逐一檢查 provider class（`pack/src/providers` 的 email／sms、`pack/src/libs/storages/files`）有無 bug 或可簡化處，並與官方 API 文件比對。
-- [ ] IP 存取政策：檢查黑白名單模式的架構是否合理，以及核心檢查函式有無 bug 或可簡化處（`pack/src/libs/platform/ip-access-policy.ts`、`management-backend/src/middlewares/security/ip-access-policy.ts`）。
 
 ## 各 repo 雜項
 
