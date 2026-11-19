@@ -36,6 +36,16 @@ async function resolvePackGitRevision(remoteUrl) {
     return [...revisions][0];
 }
 
+async function getPackGitRevision(remoteUrl) {
+    if (!packGitRevisions.has(remoteUrl)) {
+        const packGitRevision = await resolvePackGitRevision(remoteUrl);
+        packGitRevisions.set(remoteUrl, packGitRevision);
+        process.stdout.write(`${remoteUrl}: ${packGitRevision}\n`);
+    }
+
+    return packGitRevisions.get(remoteUrl);
+}
+
 for await (const filePath of glob('repos/*/package.json', { cwd: import.meta.dirname })) {
     const resolvedFilePath = join(import.meta.dirname, filePath);
     const originalFileContent = await readFile(resolvedFilePath, 'utf8');
@@ -46,18 +56,31 @@ for await (const filePath of glob('repos/*/package.json', { cwd: import.meta.dir
 
     const sourceUrl = dependency.split('#')[0];
     const remoteUrl = sourceUrl.replace(/^git\+/, '').replace(/^github:/, 'https://github.com/');
-
-    if (!packGitRevisions.has(remoteUrl)) {
-        const packGitRevision = await resolvePackGitRevision(remoteUrl);
-        packGitRevisions.set(remoteUrl, packGitRevision);
-        process.stdout.write(`${remoteUrl}: ${packGitRevision}\n`);
-    }
-
-    const updatedDependency = `${sourceUrl}#${packGitRevisions.get(remoteUrl)}`;
+    const updatedDependency = `${sourceUrl}#${await getPackGitRevision(remoteUrl)}`;
 
     if (updatedDependency === dependency) continue;
 
     packageManifest.dependencies['@kcs-project/pack'] = updatedDependency;
     await writeFile(resolvedFilePath, `${JSON.stringify(packageManifest, null, 2)}\n`);
+    process.stdout.write(`Updated ${filePath}\n`);
+}
+
+// Cargo projects pin the Rust pack with `kcs-project-pack = { ..., git = "<remote>", rev = "<revision>" }`.
+for await (const filePath of glob('repos/*/Cargo.toml', { cwd: import.meta.dirname })) {
+    const resolvedFilePath = join(import.meta.dirname, filePath);
+    const originalFileContent = await readFile(resolvedFilePath, 'utf8');
+    const dependencyLine = originalFileContent.match(/^kcs-project-pack\s*=.*$/m)?.[0];
+    const remoteUrl = dependencyLine?.match(/\bgit\s*=\s*"([^"]+)"/)?.[1];
+
+    if (!remoteUrl || !/\brev\s*=\s*"[^"]*"/.test(dependencyLine)) continue;
+
+    const updatedDependencyLine = dependencyLine.replace(
+        /\brev\s*=\s*"[^"]*"/,
+        `rev = "${await getPackGitRevision(remoteUrl)}"`,
+    );
+
+    if (updatedDependencyLine === dependencyLine) continue;
+
+    await writeFile(resolvedFilePath, originalFileContent.replace(dependencyLine, () => updatedDependencyLine));
     process.stdout.write(`Updated ${filePath}\n`);
 }

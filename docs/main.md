@@ -63,7 +63,7 @@ dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定
 - 預設只監聽 `127.0.0.1`；要讓區網其他機器直接連線時，把 `GATEWAY_EXPOSE_HOST` 設為 `0.0.0.0`。
 - 經由網域存取時，admin-frontend 的 `DEV_VITE_SERVER_ALLOWED_HOSTS` 要包含該網域。
 
-pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴改為 `.env.development.local` 的 `PACK_GIT_REF`（預設 `HEAD`，可為分支、tag 或完整 commit SHA）對應的 commit，再執行 `install-all-dependencies.sh`。
+pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴（`package.json` 的 `@kcs-project/pack` 與 `Cargo.toml` 的 `kcs-project-pack`，各自以依賴所指的 remote 解析）改為 `.env.development.local` 的 `PACK_GIT_REF`（預設 `HEAD`，可為分支、tag 或完整 commit SHA）對應的 commit，再執行 `install-all-dependencies.sh`。
 
 其他腳本：
 
