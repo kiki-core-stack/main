@@ -202,8 +202,5 @@ v8-compile-cache*/
 
 ### Custom ###
 
-# Configs
-configs/
-
 # Profiles; only the examples are tracked.
 profiles/*/.env
