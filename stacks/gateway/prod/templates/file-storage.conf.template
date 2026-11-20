@@ -1,0 +1,4 @@
+# Used by snippets/files.conf.
+map $host $file_storage_public_bucket_url {
+    default "${FILE_STORAGE_PUBLIC_BUCKET_URL}";
+}

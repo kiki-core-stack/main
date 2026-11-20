@@ -16,8 +16,11 @@ services:
       # Server names
       ADMIN_FRONTEND_SERVER_NAME: '${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
 
-      # Substitute only server names so nginx variables in templates stay untouched.
-      NGINX_ENVSUBST_FILTER: _SERVER_NAME$$
+      # Files; the gateway must reach the file storage endpoint (e.g. join the infra-services network for its RustFS).
+      FILE_STORAGE_PUBLIC_BUCKET_URL: '${FILE_STORAGE_S3_ENDPOINT:?must be set}/${PROJECT_NAME:?must be set}-${ENVIRONMENT:?must be set}-public'
+
+      # Substitute only server names and URLs so nginx variables in templates stay untouched.
+      NGINX_ENVSUBST_FILTER: _(SERVER_NAME|URL)$$
       NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/sites
     networks:
       - default
@@ -28,7 +31,6 @@ services:
     tmpfs:
       - /etc/nginx/sites
     volumes:
-      - '${FILE_STORAGE_LOCAL_BASE_PATH:?must be set}:/srv/files:ro'
       - '../nginx.conf:/etc/nginx/nginx.conf:ro'
       - '../snippets:/etc/nginx/snippets:ro'
       - './http.d:/etc/nginx/http.d:ro'

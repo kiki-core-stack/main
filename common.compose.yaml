@@ -3,9 +3,12 @@ x-common-build-args: &common-build-args
   PNPM_CONFIG_REGISTRY: '${PNPM_CONFIG_REGISTRY:?must be set}'
 
 x-common-environments: &common-environments
-  # Mount point of FILE_STORAGE_LOCAL_BASE_PATH (host) in services using local file storage.
-  FILE_STORAGE_LOCAL_BASE_PATH: /files
+  # Also name the file storage buckets (<PROJECT_NAME>-<ENVIRONMENT>-public / -private).
+  ENVIRONMENT: '${ENVIRONMENT:?must be set}'
+  FILE_STORAGE_S3_ENDPOINT: '${FILE_STORAGE_S3_ENDPOINT:?must be set}'
+  FILE_STORAGE_S3_REGION: '${FILE_STORAGE_S3_REGION:-}'
   NODE_ENV: production
+  PROJECT_NAME: '${PROJECT_NAME:?must be set}'
   WS_IO_SERVER_BASE_URL: ws://ws-io-server:8080
 
 services:

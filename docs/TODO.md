@@ -25,7 +25,7 @@
 - [ ] UI 用語：模板文字與字串出現禁用詞就報錯並給替換詞（工作階段 → 登入裝置、信箱 → 電子郵件、高危操作驗證 → 驗證身分）；禁用詞表由各專案設定。
 - [ ] 前端（含 `.ts`）不可匯入 pack 的 `hono-backend/**`：屬 KCS 專屬的邊界，放在 KCS 這一層而非通用設定。
 - [ ] 區段標記（`// Functions` 等）後的空行慣例：直接接程式碼不空行，接 JSDoc 才空一行。
-- [ ] 非同步錯誤處理寫法（try/catch 與 `.then`／`.catch`／`.finally` 的選用）：先定準則，再視需要做成規則並整理既有程式（`pack/src/libs/storages/files/local.ts` 的 `TODO(async-style)`）。
+- [ ] 非同步錯誤處理寫法（try/catch 與 `.then`／`.catch`／`.finally` 的選用）：先定準則，再視需要做成規則並整理既有程式。
 - [ ] 註解白名單：只允許區段標記、工具指令與 `TODO(...)`，其餘註解需明確標成原因。爭議最大，最後做。
 - [ ] Rust 端比照整理一輪可規則化的慣例（例如 impl 排序：先 `impl Trait for Type`，最後 `impl Type`）。
 
@@ -60,20 +60,21 @@
 
 ## 後端共用
 
-- [ ] `paginateModelData`（`management-backend/src/globals/libs/model.ts`）的 populate 過濾支援父子路徑：目前以完整字串相等比對 `fields`，改成巢狀路徑後，請求 `fields: ['payment']` 不會保留 `payment.provider`／`payment.channel` 這類 populate。
-- [ ] `pack/src/utils/image.ts` 的轉換函式改為通用的輸入／輸出選項（例如單一 options 物件），避免位置參數隨需求增加；下游已需要 resize 選項（目前以多加一個 `resizeOptions` 位置參數實作），新介面需涵蓋。
 - [ ] SMS provider class 新增取得餘額或點數的方法，串上 management-backend 與 admin-frontend。
 - [ ] Outbox event 傳遞改為 MongoDB Outbox → CDC → Kafka → BullMQ → Worker：CDC／Kafka 取代目前自行掃描、claim 與發布 outbox 的流程，BullMQ 保留工作排隊、執行、重試、延遲與排程。另立架構工作，不阻擋現有功能，不考慮舊資料。
 
 ## File／storage 與圖片
 
-重新設計 File／storage 系統與圖片縮圖，在 pack 定案後再同步下游。
+檔案只存 S3（每個專案一個公開、一個私有 bucket，見 pack `libs/storages/files`），公開檔案由 gateway 以 `/files/<hash>.<ext>` 轉發。
 
-- [ ] File model：`provider`（enum）改為 `storage`（設定檔中的 storage 名稱），以支援多個 S3 或 local／S3 混用；頂層補 `size`、`mimeType`，類型專屬資訊用可選物件（如 `image?: { width, height }`），不用通用 `meta`。
-- [ ] Storage 註冊表：設定檔定義多個 storage 實例（provider 類型、連線設定、公開網址前綴），`BaseFileStorage` 提供公開網址；私有檔案（gateway `/files/private`）以不同 storage 或 visibility 欄位表達。支援固定路徑覆蓋寫入（先寫暫存再改名），供不經 File collection 的固定 key 檔案使用。
-- [ ] 網址由後端統一產生，API 回傳完整 `url`，前端不再依 provider 自組。
-- [ ] 上傳時以 sharp 取 metadata 一併保存，並限制原圖最長邊（如 4096px）；不在上傳時預產多尺寸。縮圖交給前端 `@nuxt/image` 依環境設定 provider（Cloudflare transformations、IPX 或原圖，日後可換自架 imgproxy），尺寸以 preset 集中管理；用 Cloudflare 時需開啟 Images 付費轉換，否則超過免費額度的新轉換回 9422。不自建圖片 collection 或圖片服務。
-- [ ] 未引用檔案清理：考慮 File 去重、重新引用的競態與不同 storage；替換引用時不直接刪舊檔。
+- [ ] RustFS 實測：建立兩個 bucket、公開 bucket 只開放匿名 `GetObject`（`files/*`），驗證上傳、去重、`/api/file/redirect/:id` 與 gateway 的 `/files/`。
+- [ ] 縮圖：上傳時不產生多尺寸，交給前端 `@nuxt/image`，可接受的尺寸以 preset 集中管理。自架用 imgproxy（強制簽章，只處理後端簽過的網址）並在前面加快取；站點在 Cloudflare 後面時可用 Cloudflare 轉換，但無法限制尺寸，且免費額度用完後新的轉換回 9422。
+- [ ] 未引用檔案清理：從 schema 找出所有 `ref: 'File'` 欄位收集被引用的 id，排除建立不到 N 天的 File（先上傳、後儲存表單），刪除其餘 File 與物件；另以 `S3Client.list()` 找出沒有 File 文件的物件。富文字內容（如 strayit tinymce 的 `/api/file/redirect/<id>`）不在 schema ref 內，需解析內容或另存引用。
+- [ ] 改用 R2 時：站點放在 Cloudflare 後面，以 Worker 綁同網域的 `/files/*` 從 R2 回應，網址不變，gateway 的 `/files/` 設定可移除。
+
+## 前端共用
+
+- [ ] 遠端 selector 共用元件：KCS admin-frontend 有 2 個、strayit admin-frontend 有 8 個幾乎相同的遠端 selector（各約 55 行，載入、loading、已選資料合併），API、搜尋欄位、label、回傳 ID 或物件由使用端決定。先討論做法再動手：放在 KCS admin-frontend（非 pack），以及下游衍生的 selector 如何乾淨地改用共用元件、處理與上游的差異。
 
 ## 審查
 
