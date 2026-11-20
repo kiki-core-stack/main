@@ -52,7 +52,7 @@ flowchart LR
 
 每個環境一個 profile：`profiles/<環境>/.env`（範例 `.env.example`）放該環境所有的值。哪個服務用哪些值、用什麼名稱只寫在 compose（開發另加 `dev.compose.yaml`），不設預設值。image 不含 env 檔。
 
-- `node scripts/profile.mjs check <環境>`：檢查 key 與範例一致、必填值與 secret 不為空。
+- `node scripts/profile.mjs check <環境>`：把值為 `{{ AUTO_GENERATE }}` 的 key 換成隨機值並寫回 profile（只產生一次），再檢查 key 與範例一致、必填值與 secret 不為空。
 - `node scripts/profile.mjs render`：檢查開發 profile，並產生各 repo 的 `.env.development.local`（不要手改）；開發與依賴腳本會先執行。
 - 只屬於某個服務的值以服務名稱為前綴，compose 再改成服務自己的名稱。分組照範例。
 - 前端 build 時就要的值放 `build.args`，只放本來就公開的值（會留在建置機器的 build cache）。秘密：執行時用 compose secret；build 期間用 `build.secrets` 搭配 `RUN --mount=type=secret`；靜態前端不放秘密。
