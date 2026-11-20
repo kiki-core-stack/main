@@ -111,6 +111,10 @@ function render() {
     for (const [serviceName, service] of Object.entries(config.services)) {
         const context = service.build?.context;
         if (!context || !resolve(context).startsWith(`${reposDir}${sep}`)) continue;
+        if (!existsSync(context)) {
+            console.warn(`WARN: Skipped ${serviceName}: ${relative(mainDir, context)} not found`);
+            continue;
+        }
 
         const env = new Map(
             [
