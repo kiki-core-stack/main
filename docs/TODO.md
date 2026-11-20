@@ -68,7 +68,7 @@
 檔案只存 S3（每個專案一個公開、一個私有 bucket，見 pack `libs/storages/files`），公開檔案由 gateway 以 `/files/<hash>.<ext>` 轉發。
 
 - [ ] 縮圖：上傳時不產生多尺寸，交給前端 `@nuxt/image`，可接受的尺寸以 preset 集中管理。自架用 imgproxy（強制簽章，只處理後端簽過的網址）並在前面加快取；站點在 Cloudflare 後面時可用 Cloudflare 轉換，但無法限制尺寸，且免費額度用完後新的轉換回 9422。
-- [ ] 未引用檔案清理：從 schema 找出所有 `ref: 'File'` 欄位收集被引用的 id，排除建立不到 N 天的 File（先上傳、後儲存表單），刪除其餘 File 與物件；另以 `S3Client.list()` 找出沒有 File 文件的物件。富文字內容（如 strayit tinymce 的 `/api/file/redirect/<id>`）不在 schema ref 內，需解析內容或另存引用。
+- [ ] 未引用檔案清理：從 schema 找出所有 `ref: 'File'` 欄位收集被引用的 id，排除建立不到 N 天的 File（先上傳、後儲存表單），刪除其餘 File 與物件；另以 `S3Client.list()` 找出沒有 File 文件的物件。富文字內容（如 strayit tinymce 插入的 `/files/<hash>.<ext>`）不在 schema ref 內，需解析內容或另存引用。
 - [ ] 私有檔案（第一個用例出現時，在 pack 加上傳到私有 bucket 與檔案資訊的子文件 schema）：不進 File 模型、不去重，物件 key 用隨機 id，`{ key, mimeType, size, ... }` 存在擁有它的文件裡、隨該文件刪除。
   - 純內部檔案（如 ECP／CHCP 程式）只由後端或 worker 讀取，沒有讀取路由。
   - 受控存取（私人對話、群組附件、證件）每次讀取都檢查權限，回應的 `content-type` 用存下的 `mimeType`（`z.customFile()` 依內容偵測 type，偵測不到時為空字串）。讀取方式依流量決定：後端串流、gateway `auth_request` 問後端後直接從 bucket 回應（nginx 無法自行簽 S3 請求，需另外處理），或短效簽名網址。

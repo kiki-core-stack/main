@@ -16,7 +16,7 @@ services:
       # Server names
       ADMIN_FRONTEND_SERVER_NAME: '${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
 
-      # Files; the gateway must reach the file storage endpoint (e.g. join the infra-services network for its RustFS).
+      # Files; infra_services_file_storage reaches the RustFS of infra-services, other endpoints are reached directly.
       FILE_STORAGE_PUBLIC_BUCKET_URL: '${FILE_STORAGE_S3_ENDPOINT:?must be set}/${PROJECT_NAME:?must be set}-${ENVIRONMENT:?must be set}-public'
 
       # Substitute only server names and URLs so nginx variables in templates stay untouched.
@@ -24,6 +24,7 @@ services:
       NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/sites
     networks:
       - default
+      - infra_services_file_storage
     ports:
       - '127.0.0.1:${GATEWAY_EXPOSE_PORT:?must be set}:80'
     restart: always
