@@ -11,6 +11,7 @@ services:
         condition: service_completed_successfully
     environment:
       ADMIN_AUTH_ORIGIN: 'https://${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
+      SERVER_WORKERS: '${MANAGEMENT_BACKEND_SERVER_WORKERS:?must be set}'
     # The workers start listening only after the system initialization, so any response means it has finished.
     healthcheck:
       interval: 30s
@@ -30,6 +31,8 @@ services:
       - FILE_STORAGE_S3_SECRET_ACCESS_KEY
       - MONGODB_URI
       - REDIS_URL
+      - source: MANAGEMENT_BACKEND_COOKIE_SESSION_KEYS
+        target: COOKIE_SESSION_KEYS
       - source: MANAGEMENT_BACKEND_WS_IO_AUTH_KEY
         target: WS_IO_AUTH_KEY
       - source: MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN

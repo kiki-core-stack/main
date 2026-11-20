@@ -25,7 +25,7 @@ services:
       WS_IO_SERVER_PORT: '${WS_IO_SERVER_PORT:?must be set}'
 
       # Files
-      FILE_STORAGE_PUBLIC_BUCKET_URL: '${FILE_STORAGE_S3_ENDPOINT:?must be set}/${PROJECT_NAME:?must be set}-development-public'
+      FILE_STORAGE_PUBLIC_BUCKET_URL: '${FILE_STORAGE_S3_ENDPOINT:?must be set}/${PROJECT_NAME:?must be set}-${ENVIRONMENT:?must be set}-public'
 
       # Exports the host's DNS servers as NGINX_LOCAL_RESOLVERS for templates/resolver.conf.
       NGINX_ENTRYPOINT_LOCAL_RESOLVERS: '1'

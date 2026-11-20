@@ -48,27 +48,36 @@ flowchart LR
 
 - API 回應格式、錯誤碼、多語系、權限、enum 數值的規則見 [pack docs](https://github.com/kiki-core-stack/pack/blob/main/docs/pack.md)。
 
+## 設定（profile）
+
+每個環境一個 profile：`profiles/<環境>/.env`（範例 `.env.example`）放該環境所有的值。哪個服務用哪些值、用什麼名稱只寫在 compose（開發另加 `dev.compose.yaml`），不設預設值。image 不含 env 檔。
+
+- `node scripts/profile.mjs check <環境>`：檢查 key 與範例一致、必填值與 secret 不為空。
+- `node scripts/profile.mjs render`：檢查開發 profile，並產生各 repo 的 `.env.development.local`（不要手改）；開發與依賴腳本會先執行。
+- 只屬於某個服務的值以服務名稱為前綴，compose 再改成服務自己的名稱。分組照範例。
+- 前端 build 時就要的值放 `build.args`，只放本來就公開的值（會留在建置機器的 build cache）。秘密：執行時用 compose secret；build 期間用 `build.secrets` 搭配 `RUN --mount=type=secret`；靜態前端不放秘密。
+- 新增設定：在服務的 compose 加上對應，並在兩個 `.env.example` 加上 key。
+
 ## 開發
 
-1. 準備 MongoDB（需 replica set，transaction 用）、Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）與 S3 相容的檔案儲存（例如 RustFS）；可用 infra-services 啟動，也可自行準備，連線設定在各 repo 的 env。檔案儲存要先建立 `<PROJECT_NAME>-<ENVIRONMENT>-public` 與 `-private` 兩個 bucket，公開 bucket 只開放匿名讀取 `files/*`；infra-services 的 `rustfs-init` 會自動建立，共用的 RustFS 見下方「在共用 RustFS 建立專案」。
-2. 把服務 repo clone 到 `repos/`，執行 `install-all-dependencies.sh`。
-3. 依各 repo 的 docs 設定 `.env.development.local`（範例為 `.env.development`）。
+1. 準備 MongoDB（需 replica set，transaction 用）、Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）與 S3 相容的檔案儲存（例如 RustFS）；可用 infra-services 啟動，也可自行準備，連線設定在開發 profile。檔案儲存要先建立 `<PROJECT_NAME>-<ENVIRONMENT>-public` 與 `-private` 兩個 bucket，公開 bucket 只開放匿名讀取 `files/*`；infra-services 的 `rustfs-init` 會自動建立，共用的 RustFS 見下方「在共用 RustFS 建立專案」。
+2. 複製 `profiles/development/.env.example` 為 `profiles/development/.env` 並填入各值。
+3. 把服務 repo clone 到 `repos/`，執行 `install-all-dependencies.sh`。
 4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ws.io-server、ops-workers-ts、management-backend、admin-frontend（management-backend 啟動時連線 ws.io-server 並執行系統初始化；前端需等後端起來才能產生檔案）。
 
 dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定（路由見「部署」），只是上游換成 host 上的各 dev server（含 Nuxt HMR）。
 
 - 以 `dev-gateway.sh` 操作（參數交給 `docker compose`），以 `network_mode: host` 執行。
-- 設定只讀 `.env.development.local`（範例 `.env.development`）：各 dev server 的 port 須與各 repo 自己 env 的 port 相同；`FILE_STORAGE_S3_ENDPOINT` 須與 dev server 相同（dev gateway 以 host 的 DNS 解析，不讀 `/etc/hosts`）；同一台機器跑多套時，`PROJECT_NAME` 與 `GATEWAY_EXPOSE_PORT` 各自不同。
+- 設定讀開發 profile；`FILE_STORAGE_S3_ENDPOINT` 的主機名稱以 host 的 DNS 解析，不讀 `/etc/hosts`。
 - 預設只監聽 `127.0.0.1`；要讓區網其他機器直接連線時，把 `GATEWAY_EXPOSE_HOST` 設為 `0.0.0.0`。
-- 經由網域存取時，admin-frontend 的 `DEV_VITE_SERVER_ALLOWED_HOSTS` 要包含該網域。
 
-pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴（`package.json` 與 `Cargo.toml`）改為 `PACK_GIT_REF` 對應的 commit，再執行 `install-all-dependencies.sh`。`PACK_GIT_REF` 只從 `.env.development.local` 讀取，不會改讀 `.env.development`。
+pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴（`package.json` 與 `Cargo.toml`）改為 `PACK_GIT_REF` 對應的 commit，再執行 `install-all-dependencies.sh`。`PACK_GIT_REF` 讀自開發 profile。
 
 `scripts/check-all-repos.sh` 會對所有 repo 執行自動修正（會改檔）與型別檢查；Shell 腳本規範見 `scripts/RULES.md`。
 
 ### 在共用 RustFS 建立專案
 
-每個專案環境一個使用者，只能存取自己的兩個 bucket，同專案的開發者共用這組 key。在 RustFS 所在的機器改好開頭三個變數後整段貼上執行，最後印出的兩行填入 env。使用者已存在時 `user add` 會失敗，不會覆蓋原本的 key。
+每個專案環境一個使用者，只能存取自己的兩個 bucket，同專案的開發者共用這組 key。在 RustFS 所在的機器改好開頭三個變數後整段貼上執行，最後印出的兩行填入 profile。使用者已存在時 `user add` 會失敗，不會覆蓋原本的 key。
 
 ```sh
 (
@@ -133,7 +142,6 @@ EOF
 ## 部署
 
 - `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/ws.io` 轉給 ws.io-server、`/files` 轉給檔案儲存的公開 bucket（`FILE_STORAGE_S3_ENDPOINT` 上的 `<PROJECT_NAME>-<ENVIRONMENT>-public`，gateway 也須連得到該 endpoint，例如加入 infra-services 的網路；私有 bucket 只由後端存取），其餘給 admin-frontend 的靜態檔；`/api/internal/*` 只供服務之間呼叫，gateway 一律回 404。gateway 只綁 host 的 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`、只回應 `ADMIN_FRONTEND_SERVER_NAME`，對外由 host 的反向代理轉入。
-- 設定：`.env`（範例 `.env.example`）與 `.env.services`（範例 `.env.services.example`，給所有服務）。全專案共用的秘密寫在 `.env`、以 compose secret 傳入，各服務不在自己的 env 重複設定：`MONGODB_URI`、`REDIS_URL`、`AUTH_SECRET_ENCRYPTION_KEYS`、`FILE_STORAGE_S3_ACCESS_KEY_ID`、`FILE_STORAGE_S3_SECRET_ACCESS_KEY`，以及 management-backend 與 ws.io-server 之間的 `MANAGEMENT_BACKEND_WS_IO_AUTH_KEY`、`MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN`（至少 32 bytes）。需要驗證管理員的服務所用的 `ADMIN_AUTH_ORIGIN` 由 compose 以 `ADMIN_FRONTEND_SERVER_NAME` 組出（`https://<網域>`），不另外設定。`COOKIE_SESSION_KEYS` 不共用，各服務在自己的 env 設定。
 - 掛載進服務的 host 目錄由 `volume-permissions` 在服務啟動前建立，並把擁有者設為服務 image 的使用者（`10001:nogroup`）：`LOGS_ROOT_PATH/<服務>` 掛在 `/logs`（每個服務各自一個，新增服務時一併加進 `volume-permissions`）；由服務使用者寫入的 named volume 也掛進 `volume-permissions` 的 `/volumes/<volume>`。
 - 系統初始化（預設管理員、平台設定等，pack `initializeSystem`）只由 management-backend 在啟動 workers 前執行一次，其他服務不執行。management-backend 的 healthcheck 在初始化完成、開始回應後才通過；其他連線資料庫的服務一律在 compose 加上 `depends_on: management-backend: condition: service_healthy`，不逐一判斷是否依賴初始化結果。
-- `docker-build-and-run.sh` 建置並啟動；建置時以 SSH agent（`SSH_KEY_PATH`）取得私有 git 依賴。
+- `docker-build-and-run.sh` 先檢查正式 profile，再建置並啟動；建置時以 SSH agent（`SSH_KEY_PATH`）取得私有 git 依賴。其他 compose 操作用 `./compose.sh <環境> <參數>`（例如 `./compose.sh production logs -f management-backend`）。

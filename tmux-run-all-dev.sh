@@ -15,6 +15,7 @@ readonly SCRIPT_NAME='tmux-run-dev.sh'
 
 # Run
 main() {
+    node "${SCRIPT_DIR}/scripts/profile.mjs" render
     "${SCRIPT_DIR}/dev-gateway.sh" up -d
     "${REPOS_DIR}/ws.io-server/${SCRIPT_NAME}"
     sleep 3

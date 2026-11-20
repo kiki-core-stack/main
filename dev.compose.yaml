@@ -1,0 +1,38 @@
+# Only read by scripts/profile.mjs render; the dev servers run on the host.
+
+x-dev-environment: &dev-environment
+  NODE_ENV: development
+  NPM_CONFIG_REGISTRY: '${NPM_CONFIG_REGISTRY:?must be set}'
+  PNPM_CONFIG_REGISTRY: '${PNPM_CONFIG_REGISTRY:?must be set}'
+  WS_IO_SERVER_BASE_URL: 'ws://127.0.0.1:${WS_IO_SERVER_PORT:?must be set}'
+
+x-dev-backend-environment: &dev-backend-environment
+  <<: *dev-environment
+  VALIDATE_RESPONSES: '${VALIDATE_RESPONSES:?must be set}'
+
+services:
+  admin-frontend:
+    environment:
+      <<: *dev-environment
+      API_BASE_URL: 'http://127.0.0.1:${MANAGEMENT_BACKEND_PORT:?must be set}'
+      DEV_SERVER_HOST: 127.0.0.1
+      DEV_SERVER_PORT: '${ADMIN_FRONTEND_PORT:?must be set}'
+      DEV_VITE_SERVER_ALLOWED_HOSTS: '${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
+
+  management-backend:
+    environment:
+      <<: *dev-backend-environment
+      SERVER_HOST: 127.0.0.1
+      SERVER_PORT: '${MANAGEMENT_BACKEND_PORT:?must be set}'
+
+  ops-workers-ts:
+    environment:
+      <<: *dev-environment
+
+  ws-io-server:
+    environment:
+      <<: *dev-environment
+      LOGGER_LOG_DIR: ./logs
+      MANAGEMENT_BACKEND_API_BASE_URL: 'http://127.0.0.1:${MANAGEMENT_BACKEND_PORT:?must be set}'
+      SERVER_HOST: 127.0.0.1
+      SERVER_PORT: '${WS_IO_SERVER_PORT:?must be set}'

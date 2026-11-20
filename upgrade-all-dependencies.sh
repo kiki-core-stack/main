@@ -12,6 +12,8 @@ source "${SCRIPT_DIR}/scripts/libs/dependencies.sh"
 
 # Run
 main() {
+    # The repos' dependency scripts read their .env.development.local.
+    node "${SCRIPT_DIR}/scripts/profile.mjs" render
     run_dependency_scripts "${SCRIPT_DIR}" 'upgrade-dependencies.sh'
 }
 

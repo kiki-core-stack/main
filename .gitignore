@@ -204,3 +204,6 @@ v8-compile-cache*/
 
 # Configs
 configs/
+
+# Profiles; only the examples are tracked.
+profiles/*/.env

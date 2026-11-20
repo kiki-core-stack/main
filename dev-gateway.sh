@@ -11,7 +11,7 @@ source "${SCRIPT_DIR}/scripts/libs/common.sh"
 
 # Constants/Variables
 readonly COMPOSE_FILE_PATH="${SCRIPT_DIR}/stacks/gateway/dev/compose.yaml"
-readonly ENV_FILE_PATH="${SCRIPT_DIR}/.env.development.local"
+readonly ENV_FILE_PATH="${SCRIPT_DIR}/profiles/development/.env"
 
 # Run
 main() {

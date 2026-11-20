@@ -11,6 +11,9 @@ services:
         condition: service_healthy
       volume-permissions:
         condition: service_completed_successfully
+    environment:
+      EMAIL_SEND_JOB_WORKER_CONCURRENCY: '${EMAIL_SEND_JOB_WORKER_CONCURRENCY:?must be set}'
+      SMS_SEND_JOB_WORKER_CONCURRENCY: '${SMS_SEND_JOB_WORKER_CONCURRENCY:?must be set}'
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/ops-workers-ts'
     secrets:
       - MONGODB_URI

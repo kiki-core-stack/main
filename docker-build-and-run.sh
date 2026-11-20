@@ -14,6 +14,9 @@ cd "${SCRIPT_DIR}"
 # Constants/Variables
 readonly REMAINING_PHASE='@remaining'
 
+# Every docker compose call below reads the production profile.
+export COMPOSE_ENV_FILES="${SCRIPT_DIR}/profiles/production/.env"
+
 # Keep the default generic. Add service groups only when their build order matters.
 # Builds use an SSH agent with SSH_KEY_PATH or ~/.ssh/id_ed25519.
 # Unlisted services are appended as one final phase. Use @remaining to place that
@@ -45,6 +48,8 @@ main() {
     local -a build_options=() all_services=() phase_services=() remaining_services=()
     local -a build_phases=("${BUILD_PHASES[@]}")
     local -A known_services=() explicit_services=()
+
+    node "${SCRIPT_DIR}/scripts/profile.mjs" check production
 
     parallel="$(nproc)"
     if ((parallel > 8)); then

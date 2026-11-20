@@ -13,7 +13,10 @@ services:
         condition: service_completed_successfully
     environment:
       ADMIN_AUTH_ORIGIN: 'https://${ADMIN_FRONTEND_SERVER_NAME:?must be set}'
+      LOGGER_LOG_DIR: /logs
+      LOGGER_LOG_TO_FILE: 'true'
       MANAGEMENT_BACKEND_API_BASE_URL: http://management-backend:8080
+      RUST_LOG: info
     image: '${DOCKER_REGISTRY_HOST:+${DOCKER_REGISTRY_HOST}/}${PROJECT_NAME:?must be set}/ws.io-server'
     secrets:
       - MONGODB_URI

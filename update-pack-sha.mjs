@@ -10,12 +10,11 @@ import {
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-// Only the local env file is read; there is no fallback to `.env.development`.
-const envFilePath = join(import.meta.dirname, '.env.development.local');
-if (!existsSync(envFilePath)) throw new Error('.env.development.local not found; copy it from .env.development');
+const envFilePath = join(import.meta.dirname, 'profiles/development/.env');
+if (!existsSync(envFilePath)) throw new Error('profiles/development/.env not found; copy it from .env.example');
 process.loadEnvFile(envFilePath);
 const packGitRef = process.env.PACK_GIT_REF;
-if (!packGitRef) throw new Error('PACK_GIT_REF must be set in .env.development.local');
+if (!packGitRef) throw new Error('PACK_GIT_REF must be set in profiles/development/.env');
 
 const packGitRevisions = new Map();
 const run = promisify(execFile);
