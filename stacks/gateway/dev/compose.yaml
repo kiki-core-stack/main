@@ -27,8 +27,11 @@ services:
       # Files
       FILE_STORAGE_PUBLIC_BUCKET_URL: '${FILE_STORAGE_S3_ENDPOINT:?must be set}/${PROJECT_NAME:?must be set}-development-public'
 
-      # Substitute only hosts, ports, server names and URLs so nginx variables in templates stay untouched.
-      NGINX_ENVSUBST_FILTER: _(HOST|PORT|SERVER_NAME|URL)$$
+      # Exports the host's DNS servers as NGINX_LOCAL_RESOLVERS for templates/resolver.conf.
+      NGINX_ENTRYPOINT_LOCAL_RESOLVERS: '1'
+
+      # Substitute only hosts, ports, resolvers, server names and URLs so nginx variables in templates stay untouched.
+      NGINX_ENVSUBST_FILTER: _(HOST|PORT|RESOLVERS|SERVER_NAME|URL)$$
       NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/sites
     # Dev servers listen on the host loopback, which a bridge network cannot reach.
     network_mode: host

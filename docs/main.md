@@ -50,7 +50,7 @@ flowchart LR
 
 ## 開發
 
-1. 準備 MongoDB（需 replica set，transaction 用）、Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）與 S3 相容的檔案儲存（例如 RustFS）；可用 infra-services 啟動，也可自行準備，連線設定在各 repo 的 env。檔案儲存要先建立 `<PROJECT_NAME>-<ENVIRONMENT>-public` 與 `-private` 兩個 bucket，公開 bucket 只開放匿名讀取 `files/*`。
+1. 準備 MongoDB（需 replica set，transaction 用）、Redis 相容服務（需支援 RESP3，例如 Redis 6+、Dragonfly）與 S3 相容的檔案儲存（例如 RustFS）；可用 infra-services 啟動，也可自行準備，連線設定在各 repo 的 env。檔案儲存要先建立 `<PROJECT_NAME>-<ENVIRONMENT>-public` 與 `-private` 兩個 bucket，公開 bucket 只開放匿名讀取 `files/*`；infra-services 的 `rustfs-init` 會自動建立，共用的 RustFS 見下方「在共用 RustFS 建立專案」。
 2. 把服務 repo clone 到 `repos/`，執行 `install-all-dependencies.sh`。
 3. 依各 repo 的 docs 設定 `.env.development.local`（範例為 `.env.development`）。
 4. `tmux-run-all-dev.sh` 啟動 dev gateway，再依序啟動 ws.io-server、ops-workers-ts、management-backend、admin-frontend（management-backend 啟動時連線 ws.io-server 並執行系統初始化；前端需等後端起來才能產生檔案）。
@@ -58,13 +58,77 @@ flowchart LR
 dev gateway（`stacks/gateway/dev`）跟正式 gateway 用同一套 nginx 設定（路由見「部署」），只是上游換成 host 上的各 dev server（含 Nuxt HMR）。
 
 - 以 `dev-gateway.sh` 操作（參數交給 `docker compose`），以 `network_mode: host` 執行。
-- 設定只讀 `.env.development.local`（範例 `.env.development`）：各 dev server 的 port 須與各 repo 自己 env 的 port 相同；`FILE_STORAGE_S3_ENDPOINT` 須與 dev server 相同且用 IP（dev gateway 沒有 DNS resolver）；同一台機器跑多套時，`PROJECT_NAME` 與 `GATEWAY_EXPOSE_PORT` 各自不同。
+- 設定只讀 `.env.development.local`（範例 `.env.development`）：各 dev server 的 port 須與各 repo 自己 env 的 port 相同；`FILE_STORAGE_S3_ENDPOINT` 須與 dev server 相同（dev gateway 以 host 的 DNS 解析，不讀 `/etc/hosts`）；同一台機器跑多套時，`PROJECT_NAME` 與 `GATEWAY_EXPOSE_PORT` 各自不同。
 - 預設只監聽 `127.0.0.1`；要讓區網其他機器直接連線時，把 `GATEWAY_EXPOSE_HOST` 設為 `0.0.0.0`。
 - 經由網域存取時，admin-frontend 的 `DEV_VITE_SERVER_ALLOWED_HOSTS` 要包含該網域。
 
 pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴（`package.json` 與 `Cargo.toml`）改為 `PACK_GIT_REF` 對應的 commit，再執行 `install-all-dependencies.sh`。`PACK_GIT_REF` 只從 `.env.development.local` 讀取，不會改讀 `.env.development`。
 
 `scripts/check-all-repos.sh` 會對所有 repo 執行自動修正（會改檔）與型別檢查；Shell 腳本規範見 `scripts/RULES.md`。
+
+### 在共用 RustFS 建立專案
+
+每個專案環境一個使用者，只能存取自己的兩個 bucket，同專案的開發者共用這組 key。在 RustFS 所在的機器改好開頭三個變數後整段貼上執行，最後印出的兩行填入 env。使用者已存在時 `user add` 會失敗，不會覆蓋原本的 key。
+
+```sh
+(
+    PROJECT_NAME='kiki-core-stack'
+    ENVIRONMENT='development'
+    RUSTFS_CONTAINER='rustfs'
+
+    set -euo pipefail
+    prefix="${PROJECT_NAME}-${ENVIRONMENT}"
+    work_dir="$(mktemp -d)"
+    trap 'rm -rf -- "${work_dir}"' EXIT
+    root_access_key="$(docker exec "${RUSTFS_CONTAINER}" cat /run/secrets/RUSTFS_ACCESS_KEY | jq -Rr @uri)"
+    root_secret_key="$(docker exec "${RUSTFS_CONTAINER}" cat /run/secrets/RUSTFS_SECRET_KEY | jq -Rr @uri)"
+    export RC_HOST_rustfs="http://${root_access_key}:${root_secret_key}@127.0.0.1:9000"
+    rc() {
+        docker run --rm --env HOME=/tmp --env RC_HOST_rustfs --network "container:${RUSTFS_CONTAINER}" \
+            --user "$(id -u):$(id -g)" --volume "${work_dir}:/work:ro" rustfs/rc:v0.1.38 --quiet "$@"
+    }
+
+    cat >"${work_dir}/public-bucket-policy.json" <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": { "AWS": ["*"] },
+            "Action": ["s3:GetObject"],
+            "Resource": ["arn:aws:s3:::${prefix}-public/files/*"]
+        }
+    ]
+}
+EOF
+    cat >"${work_dir}/user-policy.json" <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": ["s3:DeleteObject", "s3:GetBucketLocation", "s3:GetObject", "s3:ListBucket", "s3:PutObject"],
+            "Resource": [
+                "arn:aws:s3:::${prefix}-private",
+                "arn:aws:s3:::${prefix}-private/*",
+                "arn:aws:s3:::${prefix}-public",
+                "arn:aws:s3:::${prefix}-public/*"
+            ]
+        }
+    ]
+}
+EOF
+
+    rc mb --ignore-existing "rustfs/${prefix}-public"
+    rc mb --ignore-existing "rustfs/${prefix}-private"
+    rc anonymous set-json /work/public-bucket-policy.json "rustfs/${prefix}-public"
+    rc admin policy create rustfs "${prefix}-files" /work/user-policy.json
+    secret_key="$(openssl rand -hex 20)"
+    rc admin user add rustfs "${prefix}" "${secret_key}"
+    rc admin policy attach rustfs "${prefix}-files" --user "${prefix}"
+    printf '\nFILE_STORAGE_S3_ACCESS_KEY_ID=%s\nFILE_STORAGE_S3_SECRET_ACCESS_KEY=%s\n' "${prefix}" "${secret_key}"
+)
+```
 
 ## 部署
 
