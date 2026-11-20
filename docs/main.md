@@ -77,7 +77,7 @@ pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 
 
 ### 在共用 RustFS 建立專案
 
-每個專案環境一個使用者，只能存取自己的兩個 bucket，同專案的開發者共用這組 key。在 RustFS 所在的機器改好開頭三個變數後整段貼上執行，最後印出的兩行填入 profile。使用者已存在時 `user add` 會失敗，不會覆蓋原本的 key。
+每個專案環境一個使用者，只能存取自己的兩個 bucket，同專案的開發者共用這組 key。在 RustFS 所在的機器改好開頭三個變數後整段貼上執行，再把印出的 `FILE_STORAGE_S3_SECRET_ACCESS_KEY` 填入 profile（access key 由 profile 組出）。使用者已存在時 `user add` 會失敗，不會覆蓋原本的 key。
 
 ```sh
 (
@@ -135,7 +135,7 @@ EOF
     secret_key="$(openssl rand -hex 20)"
     rc admin user add rustfs "${prefix}" "${secret_key}"
     rc admin policy attach rustfs "${prefix}-files" --user "${prefix}"
-    printf '\nFILE_STORAGE_S3_ACCESS_KEY_ID=%s\nFILE_STORAGE_S3_SECRET_ACCESS_KEY=%s\n' "${prefix}" "${secret_key}"
+    printf '\nFILE_STORAGE_S3_SECRET_ACCESS_KEY=%s\n' "${secret_key}"
 )
 ```
 
