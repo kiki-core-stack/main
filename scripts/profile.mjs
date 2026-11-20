@@ -129,8 +129,8 @@ function render() {
 
         const lines = [...env.keys()].sort().map((key) => {
             const value = String(env.get(key));
-            // Single quotes keep the value literal for every loader (Bun, dotenv, dotenvy, shell `.`).
-            if (/['\n]/.test(value)) fail(`${serviceName}: the value of ${key} contains a single quote or a newline`);
+            // Single quotes keep the value literal, newlines included, for every loader (Bun, dotenv, dotenvy, shell `.`).
+            if (value.includes("'")) fail(`${serviceName}: the value of ${key} contains a single quote`);
             return `${key}='${value}'`;
         });
 
