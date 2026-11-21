@@ -75,6 +75,14 @@
   - 受控存取（私人對話、群組附件、證件）每次讀取都檢查權限，回應的 `content-type` 用存下的 `mimeType`（`z.customFile()` 依內容偵測 type，偵測不到時為空字串）。讀取方式依流量決定：後端串流、gateway `auth_request` 問後端後直接從 bucket 回應（nginx 無法自行簽 S3 請求，需另外處理），或短效簽名網址。
 - [ ] 改用 R2 時：站點放在 Cloudflare 後面，以 Worker 綁同網域的 `/files/*` 從 R2 回應，網址不變，gateway 的 `/files/` 設定可移除。
 
+## codegen
+
+- [ ] OpenAPI 改為離線產生，讓後端 schema 一改，前端型別錯誤就在 typecheck 出現，不必先啟動後端：
+  - auto-hono 新增 `core/generators/openapi.ts`：載入 bootstrap、setups、middlewares 與 dev 路由 loader，不呼叫 `Bun.serve`，以 `honoApp.request('/docs/openapi.json')` 寫出 `openapi.json`；以開發 env 執行（模組載入時會讀 env，CI 以範例 profile 填假值 render）。錯誤碼清單、權限清單同理。
+  - pack `generateOpenApiClient`、`generateApiErrorCodeFile`、`generateManagementPermissionFile` 改為可讀檔案；`check-all-repos.sh` 與同步的 `check` 階段依序產生 → typecheck。
+  - 需確認：載入時就開始連線的模組（例如 ws.io client）不會讓產生器卡住。
+  - 另外評估換掉需要 Java 的 typescript-axios：@hey-api/openapi-ts（axios client、`asClass`，但 class 結構與現在的 `XxxApi.use()`／`OpenApiClientBase` 不同）、orval（產生函式，以 mutator 接 axios）；牽動所有前端的 API 呼叫寫法，與離線產生分開做。
+
 ## 前端共用
 
 - [ ] 遠端 selector 共用元件：KCS admin-frontend 有 2 個、strayit admin-frontend 有 8 個幾乎相同的遠端 selector（各約 55 行，載入、loading、已選資料合併），API、搜尋欄位、label、回傳 ID 或物件由使用端決定。先討論做法再動手：放在 KCS admin-frontend（非 pack），以及下游衍生的 selector 如何乾淨地改用共用元件、處理與上游的差異。
