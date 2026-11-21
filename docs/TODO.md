@@ -53,6 +53,7 @@
   - 範圍：做在 pack，所有 realm 共用；先開後台類 realm，再開前台。
   - 驗證：需在有 TPM 的 Windows Chrome／Edge 實機測試。
   - 不採用 IP／User-Agent 比對或瀏覽器指紋：都是用戶端可重放的資料，而正常使用者的 IP 會因行動網路、Wi-Fi、VPN 變動，誤判多且擋不住取得 cookie 的人。
+- [ ] 移除密碼金鑰、移除 TOTP 與關閉雙重驗證先消耗驗證身分的憑據，才檢查因子是否存在、是否被強制（`libs/auth/security.ts`），失敗（`notFound`、`twoFactorEnforced`）時憑據已用掉；改為比照 `docs/auth.md`「錯誤」先確認前置條件再消耗。
 
 ## 併發與資料完整性
 

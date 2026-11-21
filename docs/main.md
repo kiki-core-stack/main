@@ -141,7 +141,7 @@ EOF
 
 ## 部署
 
-- `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/ws.io` 轉給 ws.io-server、`/files` 轉給檔案儲存的公開 bucket（`FILE_STORAGE_S3_ENDPOINT` 上的 `<PROJECT_NAME>-<ENVIRONMENT>-public`，gateway 也須連得到該 endpoint，例如加入 infra-services 的網路；私有 bucket 只由後端存取），其餘給 admin-frontend 的靜態檔；`/api/internal/*` 只供服務之間呼叫，gateway 一律回 404。gateway 只綁 host 的 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`、只回應 `ADMIN_FRONTEND_SERVER_NAME`，對外由 host 的反向代理轉入。
+- `docker-compose.yaml` 引入 `stacks/` 下各服務的 compose；gateway（`stacks/gateway/prod`，nginx）把 `/api` 轉給 management-backend、`/ws.io` 轉給 ws.io-server、`/files` 轉給檔案儲存的公開 bucket（`FILE_STORAGE_S3_ENDPOINT` 上的 `<PROJECT_NAME>-<ENVIRONMENT>-public`；私有 bucket 只由後端存取。gateway 經 infra-services 的 `file-storage` network 連到它的 RustFS，不加入資料庫所在的 network，所以 infra-services 要先啟動），其餘給 admin-frontend 的靜態檔；`/api/internal/*` 只供服務之間呼叫，gateway 一律回 404。gateway 只綁 host 的 `127.0.0.1:${GATEWAY_EXPOSE_PORT}`、只回應 `ADMIN_FRONTEND_SERVER_NAME`，對外由 host 的反向代理轉入。
 - 掛載進服務的 host 目錄由 `volume-permissions` 在服務啟動前建立，並把擁有者設為服務 image 的使用者（`10001:nogroup`）：`LOGS_ROOT_PATH/<服務>` 掛在 `/logs`（每個服務各自一個，新增服務時一併加進 `volume-permissions`）；由服務使用者寫入的 named volume 也掛進 `volume-permissions` 的 `/volumes/<volume>`。
 - 系統初始化（預設管理員、平台設定等，pack `initializeSystem`）只由 management-backend 在啟動 workers 前執行一次，其他服務不執行。management-backend 的 healthcheck 在初始化完成、開始回應後才通過；其他連線資料庫的服務一律在 compose 加上 `depends_on: management-backend: condition: service_healthy`，不逐一判斷是否依賴初始化結果。
 - `docker-build-and-run.sh` 先檢查正式 profile，再建置並啟動；建置時以 SSH agent（`SSH_KEY_PATH`）取得私有 git 依賴。其他 compose 操作用 `./compose.sh <環境> <參數>`（例如 `./compose.sh production logs -f management-backend`）。
