@@ -68,7 +68,6 @@ for await (const filePath of glob('repos/*/package.json', { cwd: import.meta.dir
     process.stdout.write(`Updated ${filePath}\n`);
 }
 
-// Cargo projects pin the Rust pack with `kcs-project-pack = { ..., git = "<remote>", rev = "<revision>" }`.
 for await (const filePath of glob('repos/*/Cargo.toml', { cwd: import.meta.dirname })) {
     const resolvedFilePath = join(import.meta.dirname, filePath);
     const originalFileContent = await readFile(resolvedFilePath, 'utf8');

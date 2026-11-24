@@ -24,18 +24,21 @@
 - [ ] `keepalive: false` 只允許出現在 auth 頁；訊息寫明其他頁要用 `defineOptions({ name })` + `keepalive: { exclude: [name] }` 與原因（`keepalive: false` 會讓舊頁立刻卸載並清空快取頁）。
 - [ ] UI 用語：模板文字與字串出現禁用詞就報錯並給替換詞（工作階段 → 登入裝置、信箱 → 電子郵件、高危操作驗證 → 驗證身分）；禁用詞表由各專案設定。
 - [ ] 前端（含 `.ts`）不可匯入 pack 的 `hono-backend/**`：屬 KCS 專屬的邊界，放在 KCS 這一層而非通用設定。
-- [ ] 區段標記（`// Functions` 等）後的空行慣例：直接接程式碼不空行，接 JSDoc 才空一行。
-- [ ] 非同步錯誤處理寫法（try/catch 與 `.then`／`.catch`／`.finally` 的選用）：先定準則，再視需要做成規則並整理既有程式。
-- [ ] 註解白名單：只允許區段標記、工具指令與 `TODO(...)`，其餘註解需明確標成原因。爭議最大，最後做。
-- [ ] Rust 端比照整理一輪可規則化的慣例（例如 impl 排序：先 `impl Trait for Type`，最後 `impl Type`）。
+- [ ] Zod `refine`／`superRefine` 的回呼不可回傳 Mongoose Query（`Model.exists()`、`findOne()` 等），要寫成 `async` 並 `await`（型別感知）。Query 是 thenable 不是 Promise，Zod 只當成 truthy 值，檢查永遠通過。
+
+#### Nuxt（放 `@kikiutils/eslint-config` 的 nuxt preset）
+
+- [ ] head getter 裡不可呼叫 composable：unhead 在 SSR 輸出 head 時才執行 getter，已不在 Nuxt context，會丟 `NUXT_E1001` 回 500。`no-restricted-syntax`：`CallExpression[callee.name=/^use(Head|SeoMeta)$/] :matches(ArrowFunctionExpression, FunctionExpression) CallExpression[callee.name=/^use[A-Z]/]`。
+- [ ] 頁面與元件不手寫 `htmlAttrs.lang` 與 og／twitter 的 title、description、`og:site_name`：由 nuxt-seo-utils 或 locale-head plugin 設定，手寫會蓋掉目前語系或填錯值（join 曾把 `og:site_name` 填成頁面標題）。`no-restricted-syntax`。
+- [ ] 非 `use*` 開頭的 export 函式內不可呼叫 `use*()`：在 getter 或 `await` 之後呼叫會失去 Nuxt context；改成 `useX()` 在 setup 取得後回傳閉包（如 strayit `useLocalize`）。需自訂 rule。
+- [ ] Nitro route（`server/api/**`、`server/routes/**`）檔名必須有 method 後綴，否則接受所有 method。`eslint-plugin-check-file` 或 `check-nuxt-template-sync.mjs`。
+- [ ] 語系檔（`layers/i18n/i18n/locales/*/index.ts`）的 default export 必須 `satisfies LocaleMessages`，否則失去 key 檢查。
 
 ### 不適合做成 lint 的檢查
 
 取決於意圖的約束先把意圖寫成明確的清單或宣告，再機械地比對；寫不成清單的才留在文件。
 
-- [ ] 自動產生的檔案（`app/generated/**`、`app/apis/**`）被手改：重新產生後比對的檢查腳本。
-- [ ] 上游擁有的檔案在下游被改：比照 `check-downstream-sync.mjs` 寫檢查腳本（與上游內容相同的檔案只能在上游改）。
-- [ ] Claude Code hook：改完檔案後自動對該檔跑 lint，讓診斷當下出現。
+- [ ] Rust：Claude Code／Codex 的 Stop hook 跑 clippy（編輯後 hook 目前只涵蓋 ESLint）。
 - [ ] 公開匯出清單：有公開入口的套件（pack、`@kikiutils/eslint-config`）維護一份各入口的匯出名稱清單，檢查時與實際匯出比對，不一致即失敗；訊息寫明「加進清單，或移到 `_internals`」。用來擋住只為內部共用而從公開入口多匯出的情況（lint 分不出匯出是否為公開 API，`knip` 也抓不到有被使用的匯出）。
   - 先從 pack 的 `libs/auth` 做起，以模組為單位：`scripts/sync-package-exports.ts` 加一份公開模組清單，清單外的在 `exports` 產生成 `null`（與擋 `_internals` 同一機制），檔案不搬。
   - 目前 pack 以外有用到的：`session`、`realm`、`event`、`access`、`principal`、`rate-limit`、`code`、`password`、`passkey/browser`。其餘（`passkey/server`、`challenge`、`error`、`factor`、`login`、`principal-setting`、`qr-code-login`、`recovery-code`、`secret-encryption`、`totp`、`two-factor`、`verification`）只有 pack 自己的路由與 `libs/auth` 內部使用，下游卻能匯入並繞過路由直接呼叫。
@@ -44,6 +47,7 @@
 ### 驗證證據
 
 - [ ] 每次 UI 或流程改動附上截圖或錄影作為審查依據。
+- [ ] 把 Playwright 與 API 測試流程做成可重跑的驗證（`main/workspace/api-tests` 為起點）。
 - [ ] 形式驗證（TLA+ 等）只考慮並行邏輯（工作階段換發與全部踢除的競態等），優先度最低。
 
 ## Auth
