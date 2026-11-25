@@ -240,7 +240,6 @@ main() {
 
     add_target pack "${SCRIPT_DIR}/../../pack" 0
     add_target pack-rs "${SCRIPT_DIR}/../../pack-rs" 0
-    add_target base-backend "${SCRIPT_DIR}/../../base-backend" 0
 
     for dir in "${REPOS_DIR}"/*; do
         add_target "${dir##*/}" "${dir}" 1
