@@ -11,7 +11,9 @@ source "${SCRIPT_DIR}/libs/common.sh"
 
 # Constants/Variables
 readonly COMMIT_MESSAGE='chore: upgrade deps'
-readonly REPOS_DIR="${SCRIPT_DIR}/../repos"
+MAIN_DIR="$(cd -P -- "${SCRIPT_DIR}/.." && pwd)"
+readonly MAIN_DIR
+readonly REPOS_DIR="${MAIN_DIR}/repos"
 readonly DEPENDENCY_FILE_PATTERN='(^|/)(Cargo\.lock|Cargo\.toml|bun\.lock|bun\.lockb|package\.json|pnpm-lock\.yaml)$'
 
 # Functions
@@ -112,6 +114,9 @@ commit_repo() {
 # Run
 main() {
     local repo_dir
+
+    # The dependency scripts also upgrade main itself; the repos under repos/ are separate repositories it does not track.
+    commit_repo "${MAIN_DIR}"
 
     for repo_dir in "${REPOS_DIR}"/*/; do
         repo_dir="${repo_dir%/}"
