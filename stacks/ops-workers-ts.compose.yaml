@@ -18,5 +18,7 @@ services:
     secrets:
       - MONGODB_URI
       - REDIS_URL
+      - source: OPS_WORKERS_TS_WS_IO_AUTH_KEY
+        target: WS_IO_AUTH_KEY
     volumes:
       - '${LOGS_ROOT_PATH:?must be set}/ops-workers-ts:/logs'

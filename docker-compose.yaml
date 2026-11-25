@@ -25,6 +25,8 @@ secrets:
     environment: MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN
   MONGODB_URI:
     environment: MONGODB_URI
+  OPS_WORKERS_TS_WS_IO_AUTH_KEY:
+    environment: OPS_WORKERS_TS_WS_IO_AUTH_KEY
   REDIS_URL:
     environment: REDIS_URL
 
