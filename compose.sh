@@ -16,13 +16,16 @@ main() {
         return 1
     }
 
-    local profile_path="${SCRIPT_DIR}/profiles/$1/.env"
+    local profile="$1"
+    local profile_path="${SCRIPT_DIR}/profiles/${profile}/.env"
     shift
     [[ -f "${profile_path}" ]] || {
         log_error "Profile not found: ${profile_path}"
         return 1
     }
 
+    # Compose accepts empty secrets, so check the profile before running.
+    node "${SCRIPT_DIR}/scripts/profile.mjs" check "${profile}" >&2
     exec docker compose --project-directory "${SCRIPT_DIR}" --env-file "${profile_path}" "$@"
 }
 
