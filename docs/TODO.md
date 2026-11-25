@@ -13,26 +13,10 @@
 | 層 | 位置 | 內容 |
 | --- | --- | --- |
 | 通用 | `@kikiutils/eslint-config`、`rs-dylint-rules` | 排版、匯入順序、與專案無關的寫法 |
-| KCS 共用 | 新的 KCS ESLint plugin（Rust 之後比照開一個 dylint library） | 架構邊界與 KCS 慣例，上游與所有下游共用 |
+| KCS 共用 | `@kikiutils/eslint-config` 的 kcs preset（Rust 之後比照開一個 dylint library） | 架構邊界與 KCS 慣例，上游與所有下游共用 |
 | 專案專屬 | 各專案自己的設定檔 | 例如下游的 UI 用語、`TODO` 格式 |
 
-- [ ] 決定 KCS 共用 ESLint plugin 的位置：獨立 repo（像 pack 一樣由各 repo 依賴），或放進 pack（少一個 repo，但改規則要連帶更新所有 repo 釘的 pack 版本）。
-
-### 待做的規則
-
-- [ ] 自己的 composable 不可解構（`const xxx = useXxx()`）；第三方（VueUse、Nuxt）不在此限。
-- [ ] `keepalive: false` 只允許出現在 auth 頁；訊息寫明其他頁要用 `defineOptions({ name })` + `keepalive: { exclude: [name] }` 與原因（`keepalive: false` 會讓舊頁立刻卸載並清空快取頁）。
-- [ ] UI 用語：模板文字與字串出現禁用詞就報錯並給替換詞（工作階段 → 登入裝置、信箱 → 電子郵件、高危操作驗證 → 驗證身分）；禁用詞表由各專案設定。
-- [ ] 前端（含 `.ts`）不可匯入 pack 的 `hono-backend/**`：屬 KCS 專屬的邊界，放在 KCS 這一層而非通用設定。
-- [ ] Zod `refine`／`superRefine` 的回呼不可回傳 Mongoose Query（`Model.exists()`、`findOne()` 等），要寫成 `async` 並 `await`（型別感知）。Query 是 thenable 不是 Promise，Zod 只當成 truthy 值，檢查永遠通過。
-
-#### Nuxt（放 `@kikiutils/eslint-config` 的 nuxt preset）
-
-- [ ] head getter 裡不可呼叫 composable：unhead 在 SSR 輸出 head 時才執行 getter，已不在 Nuxt context，會丟 `NUXT_E1001` 回 500。`no-restricted-syntax`：`CallExpression[callee.name=/^use(Head|SeoMeta)$/] :matches(ArrowFunctionExpression, FunctionExpression) CallExpression[callee.name=/^use[A-Z]/]`。
-- [ ] 頁面與元件不手寫 `htmlAttrs.lang` 與 og／twitter 的 title、description、`og:site_name`：由 nuxt-seo-utils 或 locale-head plugin 設定，手寫會蓋掉目前語系或填錯值（join 曾把 `og:site_name` 填成頁面標題）。`no-restricted-syntax`。
-- [ ] 非 `use*` 開頭的 export 函式內不可呼叫 `use*()`：在 getter 或 `await` 之後呼叫會失去 Nuxt context；改成 `useX()` 在 setup 取得後回傳閉包（如 strayit `useLocalize`）。需自訂 rule。
-- [ ] Nitro route（`server/api/**`、`server/routes/**`）檔名必須有 method 後綴，否則接受所有 method。`eslint-plugin-check-file` 或 `check-nuxt-template-sync.mjs`。
-- [ ] 語系檔（`layers/i18n/i18n/locales/*/index.ts`）的 default export 必須 `satisfies LocaleMessages`，否則失去 key 檢查。
+ESLint 規則待辦在 `/data/kiki-kanri/github/kikiutils/eslint-config/.temp/TODO.md`。
 
 ### 不適合做成 lint 的檢查
 
