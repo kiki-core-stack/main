@@ -2,7 +2,6 @@
 
 ## Bug
 
-- [ ] 自己的權限變更後，前端權限狀態不更新：改了自己的身分組或自己所屬身分組的權限後，`useProfileState().permission` 要到重新整理才更新，側欄與按鈕照舊權限顯示。`data-table-page` 加 `saved` emit；管理員頁在編輯的是自己時、身分組頁每次儲存後呼叫 `updateProfileState()`；`pages/index.vue` 的 `hasViewDashboardPermission` 改成 computed。
 - [ ] 管理員頁編輯自己時隱藏密碼與確認密碼欄位，配合後端改為拒絕（見 `management-backend.md` 改密碼的驗證）。
 
 ## 簡化
