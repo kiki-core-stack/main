@@ -42,7 +42,6 @@
 
 ## 後端共用
 
-- [ ] management-backend 的 `admin/[id]/` 路由（`index.put.ts`、`index.delete.ts`、`enabled.patch.ts`）與 `getSecurityManageableAdminId` 各自複製「非 unrestricted 時加上 `isSuperAdmin: false`」的查詢條件；抽成 `libs/admin/auth.ts` 的共用函式（例如 `findManageableAdminOrThrow(ctx)`）並全部改用，避免新增的路由漏掉而讓受限管理員改到超級管理員。下游同類路由同步後一併改用。
 - [ ] SMS provider class 新增取得餘額或點數的方法，串上 management-backend 與 admin-frontend。
 - [ ] Outbox event 傳遞改為 MongoDB Outbox → CDC → Kafka → BullMQ → Worker：CDC／Kafka 取代目前自行掃描、claim 與發布 outbox 的流程，BullMQ 保留工作排隊、執行、重試、延遲與排程。另立架構工作，不阻擋現有功能，不考慮舊資料。
 
