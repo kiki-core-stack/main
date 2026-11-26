@@ -40,10 +40,6 @@
   - 驗證：需在有 TPM 的 Windows Chrome／Edge 實機測試。
   - 不採用 IP／User-Agent 比對或瀏覽器指紋：都是用戶端可重放的資料，而正常使用者的 IP 會因行動網路、Wi-Fi、VPN 變動，誤判多且擋不住取得 cookie 的人。
 
-## 併發與資料完整性
-
-- [ ] 刪除路由 read→check→delete：`admin/role`、`email/provider`、`sms/provider` 的 `[id]/index.delete.ts` 查詢 → 檢查引用 → `deleteOne()`，中間沒有 transaction／CAS；檢查後另一個請求仍可新增引用，原刪除照樣執行。下游沿用此寫法的刪除路由一併受影響。
-
 ## 後端共用
 
 - [ ] management-backend 的 `admin/[id]/` 路由（`index.put.ts`、`index.delete.ts`、`enabled.patch.ts`）與 `getSecurityManageableAdminId` 各自複製「非 unrestricted 時加上 `isSuperAdmin: false`」的查詢條件；抽成 `libs/admin/auth.ts` 的共用函式（例如 `findManageableAdminOrThrow(ctx)`）並全部改用，避免新增的路由漏掉而讓受限管理員改到超級管理員。下游同類路由同步後一併改用。
