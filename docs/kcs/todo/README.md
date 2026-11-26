@@ -66,6 +66,7 @@
 ## 前端共用
 
 - [ ] 遠端 selector 共用元件：KCS 與 strayit 的 admin-frontend 有多個幾乎相同的遠端 selector（各約 55 行，載入、loading、已選資料合併），API、搜尋欄位、label、回傳 ID 或物件由使用端決定。先討論做法再動手：放在 KCS admin-frontend（非 pack），以及下游衍生的 selector 如何乾淨地改用共用元件、處理與上游的差異。
+- [ ] admin-frontend 的 email／sms 服務商列表顯示 `usedAt`，已使用的服務商停用刪除按鈕；目前要按下刪除才由後端回 conflict。
 
 ## 審查
 
