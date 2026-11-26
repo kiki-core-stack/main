@@ -16,8 +16,6 @@
 | KCS 共用 | `@kikiutils/eslint-config` 的 kcs preset（Rust 之後比照開一個 dylint library） | 架構邊界與 KCS 慣例，上游與所有下游共用 |
 | 專案專屬 | 各專案自己的設定檔 | 例如下游的 UI 用語、`TODO` 格式 |
 
-ESLint 規則待辦在 `/data/kiki-kanri/github/kikiutils/eslint-config/.temp/TODO.md`。
-
 ### 不適合做成 lint 的檢查
 
 取決於意圖的約束先把意圖寫成明確的清單或宣告，再機械地比對；寫不成清單的才留在文件。
@@ -81,5 +79,4 @@ ESLint 規則待辦在 `/data/kiki-kanri/github/kikiutils/eslint-config/.temp/TO
 
 ## 各 repo 雜項
 
-- [ ] 清除 `minimumReleaseAgeExclude(s)`（`pnpm-workspace.yaml`、`bunfig.toml`）中標註 `TODO: remove it` 的 `@kikiutils/*`：pack、base-backend 與 `repos/*`，以及其上游範本。
 - [ ] Bun `RedisClient` 提供 `getdelBuffer` 後改為直接呼叫，並刪除 `get-and-delete-hex.lua`（`pack/src/storages/redis/msgpack.ts`，https://github.com/oven-sh/bun/issues/19576）。
