@@ -1,7 +1,5 @@
 # main 架構
 
-KCS 的主 repo：整合各服務 repo、部署設定與共用腳本。各服務是獨立的 git repo，clone 到 `repos/`。
-
 ## Repo 一覽
 
 | Repo | 位置 | 說明 | 工具鏈 |
@@ -39,13 +37,10 @@ flowchart LR
 ```
 
 - **範本傳播**：共用的改動在最上游修改，再逐層合併下去（各 repo 的 `fetch-and-merge.sh`）；下游專案以同樣方式合併 KCS。
-- **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔（見 [pack docs](https://github.com/kiki-core-stack/pack/blob/main/docs/pack.md)）。
+- **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔。
+- **共用約定**：API 回應、錯誤碼、多語系、權限、enum 數值的規則在 pack 的 `docs/kcs/pack.md`。
 - **job**：後端在同一個 transaction 寫入資料與 job outbox event，ops-workers-ts 取出後執行。
 - **ws.io**：ws.io-server 以 management-backend 的內部 API（`/api/internal/ws-io/*`，introspection token）驗證連線的 session 並定期重新驗證；工作階段被踢除時，management-backend 送事件給 ws.io-server（auth key），由它通知連線強制登出。後端服務（management-backend、ops-workers-ts）各自以自己的 auth key 連到同名 namespace；backend、services-backend 的 namespace 與 key 也先備好給下游使用（KCS 沒有這兩個服務，但 ws.io-server 啟動時仍要求它們的 key）。事件名稱定義在 pack，由 pack 產生 pack-rs 的 Rust 常數。
-
-## 跨 repo 約定
-
-- API 回應格式、錯誤碼、多語系、權限、enum 數值的規則見 [pack docs](https://github.com/kiki-core-stack/pack/blob/main/docs/pack.md)。
 
 ## 設定（profile）
 
@@ -136,5 +131,5 @@ EOF
 
 - gateway（`stacks/gateway/prod`）把 `/api` 轉給 management-backend、`/ws.io` 轉給 ws.io-server、`/files` 轉給檔案儲存的公開 bucket、其餘給 admin-frontend 的靜態檔；私有 bucket 只由後端存取；它經 infra-services 的 `file-storage` network 連到 RustFS，不加入資料庫所在的 network，所以 infra-services 要先啟動。`/api/internal/*` 只供服務之間呼叫，gateway 一律回 404。gateway 只綁 `127.0.0.1`，對外由 host 的反向代理轉入。
 - 掛載進服務的 host 目錄與 named volume 由 `volume-permissions` 在服務啟動前建立並設為服務使用者（`10001:nogroup`）擁有；新增服務時一併加進 `volume-permissions`。
-- 系統初始化（預設管理員、平台設定等，pack `initializeSystem`）只由 management-backend 在啟動 workers 前執行一次，其他服務不執行。management-backend 的 healthcheck 在初始化完成、開始回應後才通過；其他連線資料庫的服務一律在 compose 加上 `depends_on: management-backend: condition: service_healthy`，不逐一判斷是否依賴初始化結果。
+- 系統初始化（pack `initializeSystem`）只由 management-backend 執行，它的 healthcheck 在初始化完成、開始回應後才通過；其他連線資料庫的服務一律在 compose 加上 `depends_on: management-backend: condition: service_healthy`，不逐一判斷是否依賴初始化結果。
 - `docker-build-and-run.sh` 先檢查正式 profile，再建置並啟動；建置時以 SSH agent（`SSH_KEY_PATH`）取得私有 git 依賴。其他 compose 操作用 `./compose.sh <環境> <參數>`。

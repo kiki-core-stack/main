@@ -39,7 +39,7 @@
   - 範圍：做在 pack，所有 realm 共用；先開後台類 realm，再開前台。
   - 驗證：需在有 TPM 的 Windows Chrome／Edge 實機測試。
   - 不採用 IP／User-Agent 比對或瀏覽器指紋：都是用戶端可重放的資料，而正常使用者的 IP 會因行動網路、Wi-Fi、VPN 變動，誤判多且擋不住取得 cookie 的人。
-- [ ] 移除密碼金鑰、移除 TOTP 與關閉雙重驗證先消耗驗證身分的憑據，才檢查因子是否存在、是否被強制（`libs/auth/security.ts`），失敗（`notFound`、`twoFactorEnforced`）時憑據已用掉；改為比照 `docs/auth.md`「錯誤」先確認前置條件再消耗。
+- [ ] 移除密碼金鑰、移除 TOTP 與關閉雙重驗證先消耗驗證身分的憑據，才檢查因子是否存在、是否被強制（`hono-backend/libs/auth/routes/security.ts`），失敗（`notFound`、`twoFactorEnforced`）時憑據已用掉；改為比照 pack `docs/kcs/auth.md`「錯誤」先確認前置條件再消耗。
 
 ## 併發與資料完整性
 
@@ -51,8 +51,6 @@
 - [ ] Outbox event 傳遞改為 MongoDB Outbox → CDC → Kafka → BullMQ → Worker：CDC／Kafka 取代目前自行掃描、claim 與發布 outbox 的流程，BullMQ 保留工作排隊、執行、重試、延遲與排程。另立架構工作，不阻擋現有功能，不考慮舊資料。
 
 ## File／storage 與圖片
-
-檔案只存 S3（每個專案一個公開、一個私有 bucket，見 pack `libs/storages/files`），公開檔案由 gateway 以 `/files/<hash>.<ext>` 轉發。
 
 - [ ] 縮圖：上傳時不產生多尺寸，交給前端 `@nuxt/image`，可接受的尺寸以 preset 集中管理。自架用 imgproxy（強制簽章，只處理後端簽過的網址）並在前面加快取；站點在 Cloudflare 後面時可用 Cloudflare 轉換，但無法限制尺寸，且免費額度用完後新的轉換回 9422。
 - [ ] 未引用檔案清理：從 schema 找出所有 `ref: 'File'` 欄位收集被引用的 id，排除建立不到 N 天的 File（先上傳、後儲存表單），刪除其餘 File 與物件；另以 `S3Client.list()` 找出沒有 File 文件的物件。富文字內容（如 strayit tinymce 插入的 `/files/<hash>.<ext>`）不在 schema ref 內，需解析內容或另存引用。
@@ -71,12 +69,8 @@
 
 ## 前端共用
 
-- [ ] 遠端 selector 共用元件：KCS admin-frontend 有 2 個、strayit admin-frontend 有 8 個幾乎相同的遠端 selector（各約 55 行，載入、loading、已選資料合併），API、搜尋欄位、label、回傳 ID 或物件由使用端決定。先討論做法再動手：放在 KCS admin-frontend（非 pack），以及下游衍生的 selector 如何乾淨地改用共用元件、處理與上游的差異。
+- [ ] 遠端 selector 共用元件：KCS 與 strayit 的 admin-frontend 有多個幾乎相同的遠端 selector（各約 55 行，載入、loading、已選資料合併），API、搜尋欄位、label、回傳 ID 或物件由使用端決定。先討論做法再動手：放在 KCS admin-frontend（非 pack），以及下游衍生的 selector 如何乾淨地改用共用元件、處理與上游的差異。
 
 ## 審查
 
 - [ ] 逐一檢查 provider class（`pack/src/providers` 的 email／sms）有無 bug 或可簡化處，並與官方 API 文件比對。
-
-## 各 repo 雜項
-
-- [ ] Bun `RedisClient` 提供 `getdelBuffer` 後改為直接呼叫，並刪除 `get-and-delete-hex.lua`（`pack/src/storages/redis/msgpack.ts`，https://github.com/oven-sh/bun/issues/19576）。
