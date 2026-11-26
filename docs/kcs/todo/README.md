@@ -1,5 +1,7 @@
 # KCS 待辦
 
+各 repo 自己的待辦：[pack](pack.md)、[management-backend](management-backend.md)、[admin-frontend](admin-frontend.md)、[ops-workers-ts](ops-workers-ts.md)。本頁放跨 repo 或不屬於單一 repo 的項目。
+
 ## 以工具取代提示：lint、檢查腳本與驗證證據
 
 方向：每次糾正都變成 lint 規則或檢查，而不是再寫一條記憶或文件；規則的錯誤訊息直接寫原因與改法，在出錯當下就是指示。人審查證據（截圖、錄影、測試結果），不逐行審程式碼。
