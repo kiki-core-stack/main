@@ -7,7 +7,6 @@
 
 ## Auth
 
-- [ ] `AuthRouteMeta.verification`（`hono-backend/types/auth.ts`）在 `authenticate` 中介層就消耗憑據，比 validator 與 handler 前置條件早，輸入驗證失敗也會用掉，和 `beforeWrite` 的做法相反；KCS 與下游都沒有路由使用。刪掉，以 handler 內呼叫 `assertVerification` 為唯一做法。
 - [ ] 只給後端用的 auth 型別（`StoredAuthSession` 含 `secretHash`、引用 mongoose `Types` 的 `AuthPrincipal`、`RecordAuthEventInput`、`AuthMessage`、`AuthOperationContext`）放在公開的 `types/auth.ts`，經 `./types/*` 匯出給前端；前端只用 `AuthFactor`。移到 `libs/auth` 或 `hono-backend/types`，`types/auth.ts` 只留 `AuthFactor`／`AuthSecondFactor`。
 
 ## 簡化
