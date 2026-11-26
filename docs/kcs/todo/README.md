@@ -64,7 +64,7 @@
 - [ ] OpenAPI 改為離線產生，讓後端 schema 一改，前端型別錯誤就在 typecheck 出現，不必先啟動後端：
   - auto-hono 新增 `core/generators/openapi.ts`：載入 bootstrap、setups、middlewares 與 dev 路由 loader，不呼叫 `Bun.serve`，以 `honoApp.request('/docs/openapi.json')` 寫出 `openapi.json`；以開發 env 執行（模組載入時會讀 env，CI 以範例 profile 填假值 render）。錯誤碼清單、權限清單同理。
   - pack `generateOpenApiClient`、`generateApiErrorCodeFile`、`generateManagementPermissionFiles` 改為可讀檔案；`check-all-repos.sh` 與同步的 `check` 階段依序產生 → typecheck。
-  - 需確認：載入時就開始連線的模組（例如 ws.io client）不會讓產生器卡住。
+  - 需確認：載入時就開始連線的模組（例如 pack 的 `connections/redis`，import 時建立、無限重試）不會讓產生器卡住。
   - 另外評估換掉需要 Java 的 typescript-axios：@hey-api/openapi-ts（axios client、`asClass`，但 class 結構與現在的 `XxxApi.use()`／`OpenApiClientBase` 不同）、orval（產生函式，以 mutator 接 axios）；牽動所有前端的 API 呼叫寫法，與離線產生分開做。
 
 ## 前端共用

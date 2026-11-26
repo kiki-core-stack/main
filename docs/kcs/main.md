@@ -33,6 +33,7 @@ flowchart LR
     managementBackend -- job outbox --> opsWorkers
     adminFrontend -- ws.io --> wsIoServer
     managementBackend -- ws.io：工作階段被踢除 --> wsIoServer
+    opsWorkers -- ws.io --> wsIoServer
     wsIoServer -- 內部 API：驗證 session --> managementBackend
 ```
 
@@ -61,7 +62,7 @@ dev gateway（`stacks/gateway/dev`，由 `dev-gateway.sh` 操作）跟正式 gat
 
 pack 推上遠端後，執行 `node update-pack-sha.mjs` 把 `repos/*` 的 pack 依賴改為 `PACK_GIT_REF` 對應的 commit，再執行 `install-all-dependencies.sh`。`PACK_GIT_REF` 讀自開發 profile。
 
-`scripts/check-all-repos.sh` 會對所有 repo 執行自動修正（會改檔）與型別檢查；Shell 腳本規範見 `scripts/RULES.md`。
+`scripts/check-all-repos.sh` 會對 `repos/*`、pack、pack-rs 執行自動修正（會改檔）與型別檢查；Shell 腳本規範見 `scripts/RULES.md`。
 
 ### 在共用 RustFS 建立專案
 
