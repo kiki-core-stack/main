@@ -41,7 +41,7 @@ flowchart LR
 - **範本傳播**：共用的改動在最上游修改，再逐層合併下去（各 repo 的 `fetch-and-merge.sh`）；下游專案以同樣方式合併 KCS。
 - **codegen**：admin-frontend 在 dev 啟動時打 management-backend 的開發用路由，產生錯誤碼與權限檔（見 [pack docs](https://github.com/kiki-core-stack/pack/blob/main/docs/pack.md)）。
 - **job**：後端在同一個 transaction 寫入資料與 job outbox event，ops-workers-ts 取出後執行。
-- **ws.io**：ws.io-server 以 management-backend 的內部 API（`/api/internal/ws-io/*`，introspection token）驗證連線的 session 並定期重新驗證；工作階段被踢除時，management-backend 送事件給 ws.io-server（auth key），由它通知連線強制登出。後端服務（management-backend、ops-workers-ts）各自以自己的 auth key 連到同名 namespace。事件名稱定義在 pack，由 pack 產生 pack-rs 的 Rust 常數。
+- **ws.io**：ws.io-server 以 management-backend 的內部 API（`/api/internal/ws-io/*`，introspection token）驗證連線的 session 並定期重新驗證；工作階段被踢除時，management-backend 送事件給 ws.io-server（auth key），由它通知連線強制登出。後端服務（management-backend、ops-workers-ts）各自以自己的 auth key 連到同名 namespace；backend、services-backend 的 namespace 與 key 也先備好給下游使用（KCS 沒有這兩個服務，但 ws.io-server 啟動時仍要求它們的 key）。事件名稱定義在 pack，由 pack 產生 pack-rs 的 Rust 常數。
 
 ## 跨 repo 約定
 

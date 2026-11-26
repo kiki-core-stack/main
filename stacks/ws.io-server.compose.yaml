@@ -21,11 +21,15 @@ services:
     secrets:
       - MONGODB_URI
       - REDIS_URL
+      - source: BACKEND_WS_IO_AUTH_KEY
+        target: BACKEND_AUTH_KEY
       - source: MANAGEMENT_BACKEND_WS_IO_AUTH_KEY
         target: MANAGEMENT_BACKEND_AUTH_KEY
       - source: MANAGEMENT_BACKEND_WS_IO_INTROSPECTION_TOKEN
         target: MANAGEMENT_BACKEND_API_INTROSPECTION_TOKEN
       - source: OPS_WORKERS_TS_WS_IO_AUTH_KEY
         target: OPS_WORKERS_TS_AUTH_KEY
+      - source: SERVICES_BACKEND_WS_IO_AUTH_KEY
+        target: SERVICES_BACKEND_AUTH_KEY
     volumes:
       - '${LOGS_ROOT_PATH:?must be set}/ws.io-server:/logs'

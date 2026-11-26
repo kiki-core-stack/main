@@ -13,6 +13,8 @@ networks:
 secrets:
   AUTH_SECRET_ENCRYPTION_KEYS:
     environment: AUTH_SECRET_ENCRYPTION_KEYS
+  BACKEND_WS_IO_AUTH_KEY:
+    environment: BACKEND_WS_IO_AUTH_KEY
   FILE_STORAGE_S3_ACCESS_KEY_ID:
     environment: FILE_STORAGE_S3_ACCESS_KEY_ID
   FILE_STORAGE_S3_SECRET_ACCESS_KEY:
@@ -29,6 +31,8 @@ secrets:
     environment: OPS_WORKERS_TS_WS_IO_AUTH_KEY
   REDIS_URL:
     environment: REDIS_URL
+  SERVICES_BACKEND_WS_IO_AUTH_KEY:
+    environment: SERVICES_BACKEND_WS_IO_AUTH_KEY
 
 volumes:
   admin-frontend-static:
